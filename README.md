@@ -7,6 +7,9 @@ This library downloads the `dSYM` assets needed to symbolicate and stores them
 in a `cache` folder relative to the module. These files are large (~300MB) and
 may take some time download initially.
 
+Symbolicating may take some time since the frameworks loaded are quite large.
+Expect each line in the file to take up to 5 seconds to symbolicate.
+
 ```
 npm install electron-atos
 ```
