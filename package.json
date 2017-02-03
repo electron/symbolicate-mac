@@ -1,0 +1,32 @@
+{
+  "name": "electron-atos",
+  "version": "1.0.0",
+  "description": "Symbolicate Electron macOS crashes",
+  "main": "index.js",
+  "bin": {
+    "electron-atos": "./cli.js"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "keywords": [
+    "atos",
+    "electron"
+  ],
+  "author": "Kevin Sawicki",
+  "license": "ISC",
+  "dependencies": {
+    "extract-zip": "^1.6.0",
+    "yargs": "^6.6.0"
+  },
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=7"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0",
+    "standard": "^8.6.0"
+  }
+}

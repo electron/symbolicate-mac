@@ -1,0 +1,2 @@
+worker (in libnode.dylib) (threadpool.c:76)
+uv__thread_start (in libnode.dylib) (thread.c:54)
