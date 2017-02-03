@@ -1,7 +1,7 @@
 # electron-atos
 
 Symbolicate an [Electron](http://electron.atom.io) macOS crash report that is
-missing symbols.
+missing symbols using [atos](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/atos.1.html).
 
 This library downloads the `dSYM` assets needed to symbolicate and stores them
 in a `cache` folder relative to the module. These files are large (~300MB) and
