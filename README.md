@@ -7,6 +7,10 @@ This library downloads the `dSYM` assets needed to symbolicate and stores them
 in a `cache` folder relative to the module. These files are large (~300MB) and
 may take some time download initially.
 
+```
+npm install electron-atos
+```
+
 ## Usage
 
 - Copy the lines missing symbols from a crash report to a local `crash.txt` file:
