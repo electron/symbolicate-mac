@@ -94,9 +94,9 @@ const getAddresses = (file) => {
 
 const getLibraryPath = (rootDirectory, library) => {
   switch (library) {
-    case 'com.github.electron.framework':
-      return path.join(rootDirectory, 'Electron framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework')
     case 'libnode.dylib':
       return path.join(rootDirectory, 'libnode.dylib.dSYM', 'Contents', 'Resources', 'DWARF', 'libnode.dylib')
+    default:
+      return path.join(rootDirectory, 'Electron framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework')
   }
 }
