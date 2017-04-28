@@ -1,2 +1,2 @@
 content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)
-content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (__tree:165)
+content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (service_worker_process_manager.cc:79)
