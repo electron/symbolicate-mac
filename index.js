@@ -17,11 +17,17 @@ module.exports = (options, callback) => {
     const symbolicateNextAddress = () => {
       const address = addresses.shift()
       if (address == null) return callback(null, symbols)
-      symbolicate({directory, address}, (error, symbol) => {
-        if (error != null) return callback(error)
-        symbols.push(symbol)
+
+      if (address.line != null) {
+        symbols.push(address.line)
         symbolicateNextAddress()
-      })
+      } else {
+        symbolicate({directory, address}, (error, symbol) => {
+          if (error != null) return callback(error)
+          symbols.push(symbol)
+          symbolicateNextAddress()
+        })
+      }
     }
     symbolicateNextAddress()
   })
@@ -87,7 +93,13 @@ const getAddresses = (file) => {
     const library = segments[1]
     const address = segments[2]
     const image = segments[3]
-    addresses.push({library, image, address})
+
+    // images are of the format: 0x10eb25000
+    if (/0x[0-9a-fA-F]+/.test(image)) {
+      addresses.push({library, image, address})
+    } else {
+      addresses.push({line: segments.slice(3).join(' ')})
+    }
   })
   return addresses
 }

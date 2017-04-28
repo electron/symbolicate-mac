@@ -33,4 +33,16 @@ describe('atos', function () {
       done()
     })
   })
+
+  it('return an array of symbols for partially symbolicated addresses', (done) => {
+    atos({
+      file: path.join(fixtures, 'mixed-addresses.txt'),
+      version: '1.4.14'
+    }, (error, symbols) => {
+      if (error != null) return done(error)
+
+      assert.equal(symbols.join('\n'), fs.readFileSync(path.join(fixtures, 'mixed-symbols.txt'), 'utf8').trim())
+      done()
+    })
+  })
 })

@@ -30,7 +30,7 @@ npm install electron-atos
 electron-atos --file /path/to/crash.txt --version 1.4.14
 ```
 
-- The symbols of the given address will be printed out:
+- The symbols of the given address(es) will be printed out:
 
 ```
 content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)
