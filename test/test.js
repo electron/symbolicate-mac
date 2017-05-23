@@ -45,4 +45,16 @@ describe('atos', function () {
       done()
     })
   })
+
+  it('returns an array of symbols for addresses taken from sampling', (done) => {
+    atos({
+      file: path.join(fixtures, 'sampling-addresses.txt'),
+      version: '1.6.8'
+    }, (error, symbols) => {
+      if (error != null) return done(error)
+
+      assert.equal(symbols.join('\n'), fs.readFileSync(path.join(fixtures, 'sampling-symbols.txt'), 'utf8').trim())
+      done()
+    })
+  })
 })

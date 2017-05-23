@@ -1,0 +1,3 @@
+content::ContentMain(content::ContentMainParams const&) (in Electron Framework) (content_main.cc:20)
+content::ContentMainRunnerImpl::Run() (in Electron Framework) (content_main_runner.cc:774)
+worker (in libnode.dylib) (threadpool.c:76)
