@@ -34,7 +34,7 @@ describe('atos', function () {
     })
   })
 
-  it('return an array of symbols for partially symbolicated addresses', (done) => {
+  it('returns an array of symbols for partially symbolicated addresses', (done) => {
     atos({
       file: path.join(fixtures, 'mixed-addresses.txt'),
       version: '1.4.14'
