@@ -17,6 +17,7 @@
   "author": "Kevin Sawicki",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.6.1",
     "electron-download": "^4.0.0",
     "extract-zip": "^1.6.0",
     "yargs": "^6.6.0"

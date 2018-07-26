@@ -1,8 +1,11 @@
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
 const ChildProcess = require('child_process')
+
 const electronDownload = require('electron-download')
 const extractZip = require('extract-zip')
-const fs = require('fs')
-const path = require('path')
+const mapLimit = require('async/mapLimit')
 
 module.exports = (options, callback) => {
   const {version, quiet, file, force} = options
@@ -13,23 +16,13 @@ module.exports = (options, callback) => {
   download({version, quiet, directory, force}, (error) => {
     if (error != null) return callback(error)
 
-    const symbols = []
-    const symbolicateNextAddress = () => {
-      const address = addresses.shift()
-      if (address == null) return callback(null, symbols)
-
+    mapLimit(addresses, os.cpus().length, (address, cb) => {
       if (address.line != null) {
-        symbols.push(address.line)
-        symbolicateNextAddress()
+        cb(null, address.line)
       } else {
-        symbolicate({directory, address}, (error, symbol) => {
-          if (error != null) return callback(error)
-          symbols.push(symbol)
-          symbolicateNextAddress()
-        })
+        symbolicate({directory, address}, cb)
       }
-    }
-    symbolicateNextAddress()
+    }, callback)
   })
 }
 
