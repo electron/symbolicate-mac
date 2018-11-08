@@ -8,12 +8,13 @@ const extractZip = require('extract-zip')
 const mapLimit = require('async/mapLimit')
 
 module.exports = (options, callback) => {
-  const {version, quiet, file, force} = options
-  const directory = path.join(__dirname, 'cache', version)
+  const {version, quiet, file, mas, force} = options
+  const platform = options.mas ? 'mas' : 'darwin'
+  const directory = path.join(__dirname, 'cache', version + '-' + platform)
 
   const addresses = getAddresses(file)
 
-  download({version, quiet, directory, force}, (error) => {
+  download({version, quiet, directory, platform, force}, (error) => {
     if (error != null) return callback(error)
 
     mapLimit(addresses, os.cpus().length, (address, cb) => {
@@ -27,14 +28,14 @@ module.exports = (options, callback) => {
 }
 
 const download = (options, callback) => {
-  const {version, quiet, directory, force} = options
+  const {version, quiet, directory, platform, force} = options
 
   if (fs.existsSync(directory) && !force) return callback()
 
   electronDownload({
     version: version,
     dsym: true,
-    platform: 'darwin',
+    platform,
     arch: 'x64',
     quiet: quiet,
     force: force
