@@ -83,7 +83,8 @@ const getAddresses = (file) => {
     if (line.match(/load address/)) {
       addresses.push(parseSamplingAddress(line))
     } else {
-      addresses.push(parseAddress(line))
+      const a = parseAddress(line)
+      if (a) addresses.push(a)
     }
   })
   return addresses
