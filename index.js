@@ -136,6 +136,6 @@ const getLibraryPath = (rootDirectory, library) => {
     case 'libnode.dylib':
       return path.join(rootDirectory, 'libnode.dylib.dSYM', 'Contents', 'Resources', 'DWARF', 'libnode.dylib')
     default:
-      return path.join(rootDirectory, 'Electron framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework')
+      return path.join(rootDirectory, 'Electron Framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework')
   }
 }
