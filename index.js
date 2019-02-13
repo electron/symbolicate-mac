@@ -17,13 +17,22 @@ module.exports = (options, callback) => {
   download({version, quiet, directory, platform, force}, (error) => {
     if (error != null) return callback(error)
 
-    mapLimit(addresses, os.cpus().length, (address, cb) => {
-      if (address.line != null) {
-        cb(null, address.line)
+    mapLimit(addresses, os.cpus().length, (a, cb) => {
+      if (a.symbols != null) {
+        cb(null, a.symbols)
       } else {
-        symbolicate({directory, address}, cb)
+        const {library, image, addresses} = a
+        const libraryPath = getLibraryPath(directory, library)
+        symbolicate({library: libraryPath, image, addresses: addresses.map(a => a.address)}).then((symbols) => {
+          cb(null, symbols.map((symbol, i) => ({symbol, i: addresses[i].i})))
+        })
       }
-    }, callback)
+    }, (err, syms) => {
+      if (err) callback(err)
+      const concatted = syms.reduce((m, o) => m.concat(o), [])
+      const sorted = concatted.sort((a, b) => a.i - b.i)
+      callback(null, sorted.map(x => x.symbol))
+    })
   })
 }
 
@@ -45,53 +54,68 @@ const download = (options, callback) => {
   })
 }
 
-const symbolicate = (options, callback) => {
-  const {directory, address} = options
+const exec = (command, args, stdin) => {
+  return new Promise((resolve, reject) => {
+    const proc = ChildProcess.spawn(command, args)
+    let output = ''
+    let error = ''
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve(output)
+      } else {
+        error = `${command} exited with ${code}: ${error}`
+        reject(new Error(error))
+      }
+    })
+    proc.stdout.on('data', (data) => {
+      output += data.toString()
+    })
+    proc.stderr.on('data', (data) => {
+      error += data.toString()
+    })
+    proc.stdin.write(stdin)
+    proc.stdin.end()
+  })
+}
 
-  const command = 'atos'
-  const args = [
-    '-o',
-    getLibraryPath(directory, address.library),
-    '-l',
-    address.image
-  ]
-  const atos = ChildProcess.spawn(command, args)
-  let output = ''
-  let error = ''
-  atos.on('close', (code) => {
-    if (code === 0) {
-      callback(null, output.trim())
-    } else {
-      error = `atos exited with ${code}: ${error}`
-      callback(new Error(error))
-    }
-  })
-  atos.stdout.on('data', (data) => {
-    output += data.toString()
-  })
-  atos.stderr.on('data', (data) => {
-    error += data.toString()
-  })
-  atos.stdin.write(address.address)
-  atos.stdin.end()
+const symbolicate = async ({library, image, addresses}) => {
+  const atos_stdout = await exec('atos', ['-o', library, '-l', image], addresses.join('\n'))
+  return atos_stdout.trim().split('\n')
+}
+
+const groupBy = (xs, f) => {
+  const groups = new Map
+  for (const x of xs) {
+    const key = f(x)
+    if (!groups.has(key))
+      groups.set(key, [])
+    groups.get(key).push(x)
+  }
+  return Array.from(groups.values())
 }
 
 const getAddresses = (file) => {
   const content = fs.readFileSync(file, 'utf8')
   const addresses = []
-  content.split('\n').forEach((line) => {
-    if (line.match(/load address/)) {
-      addresses.push(parseSamplingAddress(line))
-    } else {
-      const a = parseAddress(line)
-      if (a) addresses.push(a)
+  content.split('\n').forEach((line, i) => {
+    const parser = /load address/.test(line) ? parseSamplingAddress : parseAddress
+    const a = parser(line)
+    if (a) {
+      addresses.push({...a, i})
     }
   })
-  return addresses
+  return groupBy(addresses, a => `${a.library};${a.image}`).map(as => {
+    const {library, image} = as[0]
+    return library == null
+      ? {symbols: as}
+      : {library, image, addresses: as}
+  })
 }
 
 // Lines from stack traces are of the format:
 // 0   com.github.electron.framework  0x000000010d01fad3 0x10c497000 + 12094163
+// or:
+// 13  com.github.electron.framework  0x00000001016ee77f atom::api::WebContents::LoadURL(GURL const&, mate::Dictionary const&) + 831
 const parseAddress = (line) => {
   const segments = line.split(/\s+/)
   const index = parseInt(segments[0])
@@ -105,7 +129,7 @@ const parseAddress = (line) => {
   if (/0x[0-9a-fA-F]+/.test(image)) {
     return {library, image, address}
   } else {
-    return {line: segments.slice(3).join(' ')}
+    return {symbol: segments.slice(3).join(' ')}
   }
 }
 
