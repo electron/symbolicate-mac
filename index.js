@@ -8,11 +8,11 @@ const extractZip = require('extract-zip')
 const mapLimit = require('async/mapLimit')
 
 module.exports = (options, callback) => {
-  const {version, quiet, file, mas, force} = options
+  const {version, quiet, file, content, mas, force} = options
   const platform = options.mas ? 'mas' : 'darwin'
   const directory = path.join(__dirname, 'cache', version + '-' + platform)
 
-  const addresses = getAddresses(file)
+  const addresses = parseAddresses(content != null ? content : fs.readFileSync(file, 'utf-8'))
 
   download({version, quiet, directory, platform, force}, (error) => {
     if (error != null) return callback(error)
@@ -94,12 +94,10 @@ const groupBy = (xs, f) => {
   return Array.from(groups.values())
 }
 
-const getAddresses = (file) => {
-  const content = fs.readFileSync(file, 'utf8')
+const parseAddresses = (content) => {
   const addresses = []
   content.split('\n').forEach((line, i) => {
-    const parser = /load address/.test(line) ? parseSamplingAddress : parseAddress
-    const a = parser(line)
+    const a = parseAddress(line)
     if (a) {
       addresses.push({...a, i})
     }
@@ -112,14 +110,18 @@ const getAddresses = (file) => {
   })
 }
 
+const parseAddress = (line) => {
+  const parser = /\(in [^)]+\)/.test(line) ? parseSamplingAddress : parseStackTraceAddress
+  return parser(line)
+}
+module.exports.testing = {parseAddress, parseAddresses}
+
 // Lines from stack traces are of the format:
 // 0   com.github.electron.framework  0x000000010d01fad3 0x10c497000 + 12094163
 // or:
 // 13  com.github.electron.framework  0x00000001016ee77f atom::api::WebContents::LoadURL(GURL const&, mate::Dictionary const&) + 831
-const parseAddress = (line) => {
+const parseStackTraceAddress = (line) => {
   const segments = line.split(/\s+/)
-  const index = parseInt(segments[0])
-  if (!isFinite(index)) return
 
   const library = segments[1]
   const address = segments[2]
@@ -136,23 +138,25 @@ const parseAddress = (line) => {
 // Lines from macOS sampling reports are of the format:
 // 2189 ???  (in Electron Framework)  load address 0x1052bd000 + 0x3f8e36  [0x1056b5e36]
 const parseSamplingAddress = (line) => {
-  const isElectron = line.match(/\(in Electron Framework\)/)
-  const isNode = line.match(/\(in libnode\.dylib\)/)
-  if (!isElectron && !isNode) return
+  const libraryName = line.match(/\(in ([^)]+)\)/)[1]
+  if (libraryName === 'Electron Framework' || libraryName === 'libnode.dylib') {
+    const addressMatch = line.match(/\[(0x[0-9a-fA-F]+)]/)
+    if (!addressMatch) return
 
-  const addressMatch = line.match(/\[(0x[0-9a-fA-F]+)]/)
-  if (!addressMatch) return
+    const imageMatch = line.match(/(0x[0-9a-fA-F]+)/)
+    if (!imageMatch) return
 
-  const imageMatch = line.match(/(0x[0-9a-fA-F]+)/)
-  if (!imageMatch) return
+    const library = libraryName === 'Electron Framework'
+      ? 'com.github.electron.framework'
+      : libraryName
+    const address = addressMatch[1]
+    const image = imageMatch[1]
+    const [, symbol, func] = line.match(/^.*?\d+ ((.+?)  .*)$/)
 
-  const library = isElectron
-    ? 'com.github.electron.framework'
-    : 'libnode.dylib'
-  const address = addressMatch[1]
-  const image = imageMatch[1]
-
-  return {library, image, address}
+    return func === '???' ? {library, image, address} : {symbol}
+  } else {
+    return {symbol: line.match(/\d+ (.*)$/)[1]}
+  }
 }
 
 const getLibraryPath = (rootDirectory, library) => {

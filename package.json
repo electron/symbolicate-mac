@@ -22,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.1",
-    "electron-download": "^4.0.0",
+    "electron-download": "^4.1.1",
     "extract-zip": "^1.6.0",
     "yargs": "^6.6.0"
   },
@@ -33,6 +33,7 @@
     "node": ">=4"
   },
   "devDependencies": {
+    "jest": "^24.1.0",
     "mocha": "^3.2.0",
     "standard": "^8.6.0"
   }

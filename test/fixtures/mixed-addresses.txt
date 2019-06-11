@@ -1,4 +1,0 @@
-0   com.github.electron.framework 	0x000000010d01fad3 0x10c497000 + 12094163
-1   com.github.electron.framework 	0x000000010eb4d929 atom::api::Debugger::DispatchProtocolMessage(content::DevToolsAgentHost*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 73
-2   com.github.electron.framework 	0x000000010eb4dbfd non-virtual thunk to atom::api::Debugger::DispatchProtocolMessage(content::DevToolsAgentHost*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 13
-3   com.github.electron.framework 	0x000000010d095014 0x10c497000 + 12574740

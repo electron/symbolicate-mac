@@ -1,4 +1,0 @@
-content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)
-atom::api::Debugger::DispatchProtocolMessage(content::DevToolsAgentHost*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 73
-non-virtual thunk to atom::api::Debugger::DispatchProtocolMessage(content::DevToolsAgentHost*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 13
-content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (service_worker_process_manager.cc:79)
