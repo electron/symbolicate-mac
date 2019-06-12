@@ -1,20 +1,24 @@
 {
-  "name": "electron-atos",
-  "version": "1.2.0",
+  "name": "@electron/symbolicate-mac",
+  "version": "2.0.0",
   "description": "Symbolicate Electron macOS crashes",
   "main": "index.js",
-  "repository": "https://github.com/kevinsawicki/electron-atos",
+  "repository": "https://github.com/electron/symbolicate-mac",
   "bin": {
-    "electron-atos": "./cli.js"
+    "electron-symbolicate-mac": "./cli.js"
   },
   "scripts": {
     "test": "mocha test && standard"
   },
   "keywords": [
     "atos",
-    "electron"
+    "electron",
+    "symbols"
   ],
-  "author": "Kevin Sawicki",
+  "contributors": [
+    "Kevin Sawicki",
+    "Jeremy Apthorp <nornagon@nornagon.net>"
+  ],
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.1",

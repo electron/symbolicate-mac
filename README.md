@@ -1,17 +1,16 @@
-# electron-atos
+# symbolicate-mac
 
 Symbolicate an [Electron](http://electron.atom.io) macOS crash report that is
-missing symbols using [atos](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/atos.1.html).
+missing symbols. Wraps
+[atos](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/atos.1.html)
+with convenient parsing and downloading of Electron symbols.
 
-This library downloads the `dSYM` assets needed to symbolicate and stores them
-in a `cache` folder relative to the module. These files are large (~300MB) and
-may take some time download initially.
-
-Symbolicating may take some time since the frameworks loaded are quite large.
-Expect each line in the file to take up to 5 seconds to symbolicate.
+This tool downloads the `dSYM` assets needed to symbolicate and stores them in
+a `cache` folder relative to the module. These files are large (~300MB) and may
+take some time download initially.
 
 ```
-npm install electron-atos
+npm install @electron/symbolicate-mac
 ```
 
 ## Usage
@@ -23,11 +22,11 @@ npm install electron-atos
 1   com.github.electron.framework 	0x000000010d095014 0x10c497000 + 12574740
 ```
 
-- Run `electron-atos` and specify the path to the file and the version of
-  Electron that was being used.
+- Run `electron-symbolicate-mac` and specify the path to the file and the
+  version of Electron that was being used.
 
 ```sh
-electron-atos --file /path/to/crash.txt --version 1.4.14
+electron-symbolicate-mac --file /path/to/crash.txt --version 1.4.14
 ```
 
 - The symbols of the given address(es) will be printed out:
