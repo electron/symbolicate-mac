@@ -1,4 +1,4 @@
-# symbolicate-mac
+# electron-symbolicate-mac
 
 Symbolicate an [Electron](http://electron.atom.io) macOS crash report that is
 missing symbols. Wraps
