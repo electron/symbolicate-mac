@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`atos returns an array of symbols for a node address 1`] = `
+Array [
+  "worker (in libnode.dylib) (threadpool.c:76)",
+  "uv__thread_start (in libnode.dylib) (thread.c:54)",
+]
+`;
+
+exports[`atos returns an array of symbols for addresses taken from sampling 1`] = `
+Array [
+  "content::ContentMain(content::ContentMainParams const&) (in Electron Framework) (content_main.cc:20)",
+  "content::ContentMainRunnerImpl::Run() (in Electron Framework) (content_main_runner.cc:774)",
+  "worker (in libnode.dylib) (threadpool.c:76)",
+]
+`;
+
+exports[`atos returns an array of symbols for an Electron framework address 1`] = `
+Array [
+  "content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)",
+  "content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (service_worker_process_manager.cc:79)",
+]
+`;
+
+exports[`atos returns an array of symbols for partially symbolicated addresses 1`] = `
+Array [
+  "content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)",
+  "atom::api::Debugger::DispatchProtocolMessage(content::DevToolsAgentHost*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 73",
+  "non-virtual thunk to atom::api::Debugger::DispatchProtocolMessage(content::DevToolsAgentHost*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 13",
+  "content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (service_worker_process_manager.cc:79)",
+]
+`;
+
+exports[`atos works for >=4.x stack traces 1`] = `
+Array [
+  "atom::AtomBindings::Crash() (in Electron Framework) (atom_bindings.cc:143)",
+  "0 + 67559204357798",
+  "v8::Function::Call(v8::Local<v8::Context>, v8::Local<v8::Value>, int, v8::Local<v8::Value>*) + 437",
+  "node::LoadEnvironment(node::Environment*) + 939",
+  "content::ContentMain(content::ContentMainParams const&) (in Electron Framework) (content_main.cc:19)",
+  "AtomMain + 84",
+  "0x00000f10 (in Electron Framework)",
+  "start + 1",
+]
+`;
