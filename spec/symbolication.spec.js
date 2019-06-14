@@ -40,6 +40,7 @@ describe('atos', function () {
   it('returns an array of symbols for an Electron framework address', (done) => {
     atos({
       content: fixture,
+      quiet: true,
       version: '1.4.14'
     }, (error, symbols) => {
       if (error != null) return done(error)
@@ -51,6 +52,7 @@ describe('atos', function () {
   it('returns an array of symbols for a node address', (done) => {
     atos({
       content: nodeFixture,
+      quiet: true,
       version: '1.4.14'
     }, (error, symbols) => {
       if (error != null) return done(error)
@@ -62,6 +64,7 @@ describe('atos', function () {
   it('returns an array of symbols for partially symbolicated addresses', (done) => {
     atos({
       content: mixedFixture,
+      quiet: true,
       version: '1.4.14'
     }, (error, symbols) => {
       if (error != null) return done(error)
@@ -73,6 +76,7 @@ describe('atos', function () {
   it('returns an array of symbols for addresses taken from sampling', (done) => {
     atos({
       content: samplingFixture,
+      quiet: true,
       version: '1.6.8'
     }, (error, symbols) => {
       if (error != null) return done(error)
@@ -84,6 +88,7 @@ describe('atos', function () {
   it('works for >=4.x stack traces', (done) => {
     atos({
       content: post4Addresses,
+      quiet: true,
       version: '4.2.2'
     }, (error, symbols) => {
       if (error != null) return done(error)
