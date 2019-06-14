@@ -1,0 +1,47 @@
+step-restore-cache: &step-restore-cache
+  restore_cache:
+    keys:
+      - v1-dependencies-{{ arch }}-{{ checksum "yarn.lock" }}
+      - v1-dependencies-{{ arch }}
+
+steps-test: &steps-test
+  steps:
+    - checkout
+    - *step-restore-cache
+    - run: yarn
+    - save_cache:
+        paths:
+          - node_modules
+        key: v1-dependencies-{{ arch }}-{{ checksum "yarn.lock" }}
+    - run: yarn test
+
+
+version: 2
+jobs:
+  test-mac:
+    macos:
+      xcode: "10.2.0"
+    <<: *steps-test
+
+  release:
+    docker:
+      - image: circleci/node:10.15
+    steps:
+      - checkout
+      - *step-restore-cache
+      - run: yarn
+      - run: npx semantic-release
+workflows:
+  version: 2
+  test_and_release:
+    # Run the test jobs first, then the release only when all the test jobs are successful
+    jobs:
+      - test-mac
+      - release:
+          requires:
+            - test-mac
+          filters:
+            branches:
+              only:
+                - master
+

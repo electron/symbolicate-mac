@@ -63,6 +63,8 @@ AtomMain + 84
 start + 1
 `.trim()
 
+const TIMEOUT = 120000;
+
 describe('atos', function () {
   it('returns an array of symbols for an Electron framework address', (done) => {
     atos({
@@ -73,7 +75,7 @@ describe('atos', function () {
       expect(symbols).toEqual(fixtureSymbols.split('\n'))
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('returns an array of symbols for a node address', (done) => {
     atos({
@@ -84,7 +86,7 @@ describe('atos', function () {
       expect(symbols).toEqual(nodeFixtureSymbols.split('\n'))
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('returns an array of symbols for partially symbolicated addresses', (done) => {
     atos({
@@ -95,7 +97,7 @@ describe('atos', function () {
       expect(symbols).toEqual(mixedFixtureSymbols.split('\n'))
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('returns an array of symbols for addresses taken from sampling', (done) => {
     atos({
@@ -106,7 +108,7 @@ describe('atos', function () {
       expect(symbols).toEqual(samplingFixtureSymbols.split('\n'))
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('works for >=4.x stack traces', (done) => {
     atos({
@@ -117,5 +119,5 @@ describe('atos', function () {
       expect(symbols).toEqual(post4Symbols.split('\n'))
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 })
