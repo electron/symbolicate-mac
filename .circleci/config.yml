@@ -24,8 +24,8 @@ jobs:
     <<: *steps-test
 
   release:
-    docker:
-      - image: circleci/node:10.15
+    macos:
+      xcode: "10.2.0"
     steps:
       - checkout
       - *step-restore-cache
