@@ -34,6 +34,8 @@ const post4Addresses = `
 47  libdyld.dylib                 	0x00007fff7a6513d5 start + 1
 `.trim()
 
+const TIMEOUT = 120000;
+
 describe('atos', function () {
   it('returns an array of symbols for an Electron framework address', (done) => {
     atos({
@@ -44,7 +46,7 @@ describe('atos', function () {
       expect(symbols).toMatchSnapshot()
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('returns an array of symbols for a node address', (done) => {
     atos({
@@ -55,7 +57,7 @@ describe('atos', function () {
       expect(symbols).toMatchSnapshot()
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('returns an array of symbols for partially symbolicated addresses', (done) => {
     atos({
@@ -66,7 +68,7 @@ describe('atos', function () {
       expect(symbols).toMatchSnapshot()
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('returns an array of symbols for addresses taken from sampling', (done) => {
     atos({
@@ -77,7 +79,7 @@ describe('atos', function () {
       expect(symbols).toMatchSnapshot()
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 
   it('works for >=4.x stack traces', (done) => {
     atos({
@@ -88,5 +90,5 @@ describe('atos', function () {
       expect(symbols).toMatchSnapshot()
       done()
     })
-  }, 30000)
+  }, TIMEOUT)
 })
