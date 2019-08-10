@@ -23,6 +23,25 @@ jobs:
       xcode: "10.2.0"
     <<: *steps-test
 
+  worker:
+    macos:
+      xcode: "10.2.0"
+    steps:
+      - checkout
+      - *step-restore-cache
+      - run: node worker.js
+      - restore_cache:
+          keys:
+            - v1-symbols-{{ arch }}-{{ .Environment.ELECTRON_VERSION }}
+      - run: node cli.js --file ./tmp.txt --version $ELECTRON_VERSION --quiet > out
+      - save_cache:
+          paths:
+            - ~/Library/Caches/electron
+          key: v1-symbols-{{ arch }}-{{ .Environment.ELECTRON_VERSION }}
+      - store_artifacts:
+          path: out
+          destination: out
+
   release:
     macos:
       xcode: "10.2.0"
