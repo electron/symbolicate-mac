@@ -22,6 +22,17 @@ Array [
 ]
 `;
 
+exports[`atos returns content with addresses symbolicated 1`] = `
+Array [
+  "content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)",
+  "content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (service_worker_process_manager.cc:79)",
+  "",
+  "Thread 1 Crashed:: Chrome_IOThread",
+  "worker (in libnode.dylib) (threadpool.c:76)",
+  "uv__thread_start (in libnode.dylib) (thread.c:54)",
+]
+`;
+
 exports[`atos returns an array of symbols for partially symbolicated addresses 1`] = `
 Array [
   "content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)",

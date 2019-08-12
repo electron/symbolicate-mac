@@ -8,11 +8,11 @@ const extractZip = require('extract-zip')
 const mapLimit = require('async/mapLimit')
 
 module.exports = (options, callback) => {
-  const {version, quiet, file, content, mas, force} = options
+  const {version, quiet, file, mas, force} = options
   const platform = options.mas ? 'mas' : 'darwin'
   const directory = path.join(__dirname, 'cache', version + '-' + platform)
-
-  const addresses = parseAddresses(content != null ? content : fs.readFileSync(file, 'utf-8'))
+  const content = options.content != null ? options.content : fs.readFileSync(file, 'utf-8')
+  const addresses = parseAddresses(content)
 
   download({version, quiet, directory, platform, force}, (error) => {
     if (error != null) return callback(error)
@@ -30,8 +30,11 @@ module.exports = (options, callback) => {
     }, (err, syms) => {
       if (err) callback(err)
       const concatted = syms.reduce((m, o) => m.concat(o), [])
-      const sorted = concatted.sort((a, b) => a.i - b.i)
-      callback(null, sorted.map(x => x.symbol))
+      let split = content.split('\n')
+      concatted.map((sym) => {
+        split[sym.i] = sym.symbol
+      })
+      callback(null, split)
     })
   })
 }
@@ -122,7 +125,9 @@ module.exports.testing = {parseAddress, parseAddresses}
 // 13  com.github.electron.framework  0x00000001016ee77f atom::api::WebContents::LoadURL(GURL const&, mate::Dictionary const&) + 831
 const parseStackTraceAddress = (line) => {
   const segments = line.split(/\s+/)
-
+  const index = parseInt(segments[0])
+  if (!isFinite(index)) return
+  
   const library = segments[1]
   const address = segments[2]
   const image = segments[3]

@@ -3,11 +3,11 @@
 const {argv} = require('yargs')
 const atos = require('./index')
 
-atos(argv, (error, symbols) => {
+atos(argv, (error, symbolicated) => {
   if (error != null) {
     console.error(error.stack || error.message)
     process.exit(1)
   } else {
-    console.log(symbols.join('\n'))
+    console.log(symbolicated.join('\n'))
   }
 })
