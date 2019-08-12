@@ -34,6 +34,15 @@ const post4Addresses = `
 47  libdyld.dylib                 	0x00007fff7a6513d5 start + 1
 `.trim()
 
+const fullReportFixture = `
+0   com.github.electron.framework 	0x000000010d01fad3 0x10c497000 + 12094163
+1   com.github.electron.framework 	0x000000010d095014 0x10c497000 + 12574740
+
+Thread 1 Crashed:: Chrome_IOThread
+3   libnode.dylib                 	0x000000010ab5c383 0x10aa09000 + 1389443
+4   libnode.dylib                 	0x000000010ab678e9 0x10aa09000 + 1435881
+`.trim()
+
 const TIMEOUT = 120000;
 
 describe('atos', function () {
@@ -64,6 +73,18 @@ describe('atos', function () {
   it('returns an array of symbols for partially symbolicated addresses', (done) => {
     atos({
       content: mixedFixture,
+      quiet: true,
+      version: '1.4.14'
+    }, (error, symbols) => {
+      if (error != null) return done(error)
+      expect(symbols).toMatchSnapshot()
+      done()
+    })
+  }, TIMEOUT)
+
+  it('returns content with addresses symbolicated', (done) => {
+    atos({
+      content: fullReportFixture,
       quiet: true,
       version: '1.4.14'
     }, (error, symbols) => {
