@@ -98,13 +98,7 @@ const groupBy = (xs, f) => {
 }
 
 const parseAddresses = (content) => {
-  const addresses = []
-  content.split('\n').forEach((line, i) => {
-    const a = parseAddress(line)
-    if (a) {
-      addresses.push({...a, i})
-    }
-  })
+  const addresses = parseAsSentryDump(content) || parseAsLines(content)
   return groupBy(addresses, a => `${a.library};${a.image}`).map(as => {
     const {library, image} = as[0]
     return library == null
@@ -114,9 +108,45 @@ const parseAddresses = (content) => {
 }
 
 const parseAddress = (line) => {
-  const parser = /\(in [^)]+\)/.test(line) ? parseSamplingAddress : parseStackTraceAddress
-  return parser(line)
+  if (/\(in [^)]+\)/.test(line)) {
+    return parseSamplingAddress(line)
+  } else if (/frame #/.test(line)) {
+    return parseDebuggerAddress(line)
+  } else {
+    return parseStackTraceAddress(line)
+  }
 }
+
+const parseAsLines = (content) => {
+  const addresses = []
+  content.split('\n').forEach((line, i) => {
+    const a = parseAddress(line)
+    if (a) {
+      addresses.push({...a, i})
+    }
+  })
+  return addresses
+}
+
+const parseAsSentryDump = (content) => {
+  try {
+    const json = JSON.parse(content)
+    if (json.debug_meta == null || json.exception == null)
+      return
+    return json.exception.values[0].stacktrace.frames.map(frame => {
+      const libraryFileName = path.basename(frame.package)
+      const library = libraryFileName === 'Electron Framework'
+          ? 'com.github.electron.framework' : libraryFileName
+      const address = frame.instruction_addr
+      const imageData = json.debug_meta.images.find(image => image.code_file === frame.package)
+      const image = imageData ? imageData.image_addr : null
+      return {library, address, image}
+    }).reverse() // Sentry puts the bottom of the stack at the beginning of the array
+  } catch (e) {
+    // Not JSON. Thus not a Sentry dump.
+  }
+}
+
 module.exports.testing = {parseAddress, parseAddresses}
 
 // Lines from stack traces are of the format:
