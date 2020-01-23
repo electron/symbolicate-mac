@@ -1,8 +1,8 @@
 # electron-symbolicate-mac
 
-Symbolicate an [Electron](http://electron.atom.io) macOS crash report that is
+Symbolicate an [Electron](https://www.electronjs.org/) macOS crash report that is
 missing symbols. Wraps
-[atos](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/atos.1.html)
+[atos](https://www.manpagez.com/man/1/atos/)
 with convenient parsing and downloading of Electron symbols.
 
 This tool downloads the `dSYM` assets needed to symbolicate and stores them in
