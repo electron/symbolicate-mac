@@ -24,7 +24,7 @@ module.exports = (options, callback) => {
         const {library, image, addresses} = a
         const libraryPath = getLibraryPath(directory, library)
         symbolicate({library: libraryPath, image, addresses: addresses.map(a => a.address)}).then((symbols) => {
-          cb(null, symbols.map((symbol, i) => ({symbol, i: addresses[i].i})))
+          cb(null, symbols.map((symbol, i) => ({symbol, i: addresses[i].i, replace: addresses[i].replace})))
         })
       }
     }, (err, syms) => {
@@ -32,7 +32,11 @@ module.exports = (options, callback) => {
       const concatted = syms.reduce((m, o) => m.concat(o), [])
       let split = content.split('\n')
       concatted.map((sym) => {
-        split[sym.i] = sym.symbol
+        if (sym.replace) {
+          split[sym.i] = split[sym.i].substr(0, sym.replace.from) + sym.symbol + split[sym.i].substr(sym.replace.from + sym.replace.length)
+        } else {
+          split[sym.i] = sym.symbol
+        }
       })
       callback(null, split)
     })
@@ -188,9 +192,10 @@ const parseSamplingAddress = (line) => {
     const image = imageMatch[1]
     const [, symbol, func] = line.match(/^.*?\d+ ((.+?)  .*)$/)
 
-    return func === '???' ? {library, image, address} : {symbol}
-  } else {
-    return {symbol: line.match(/\d+ (.*)$/)[1]}
+    if (func === '???') {
+      const replace = line.match(/\?\?\?  \(in [^)]+\)/)
+      return {library, image, address, replace: {from: replace.index, length: replace[0].length}}
+    }
   }
 }
 
