@@ -26,7 +26,7 @@ npm install @electron/symbolicate-mac
   version of Electron that was being used.
 
 ```sh
-electron-symbolicate-mac --file /path/to/crash.txt --version 1.4.14
+electron-symbolicate-mac --file /path/to/crash.txt --version 8.3.3
 ```
 
 - The symbols of the given address(es) will be printed out:
