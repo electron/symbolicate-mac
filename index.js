@@ -102,13 +102,28 @@ const groupBy = (xs, f) => {
 }
 
 const parseAddresses = (content) => {
-  const addresses = parseAsSentryDump(content) || parseAsLines(content)
+  const addresses = parseAsSentryDump(content) || parseAsCompleteCrash(content) || parseAsLines(content)
   return groupBy(addresses, a => `${a.library};${a.image}`).map(as => {
     const {library, image} = as[0]
     return library == null
       ? {symbols: as}
       : {library, image, addresses: as}
   })
+}
+
+const parseAsCompleteCrash = (content) => {
+  const m = /^0x([0-9a-f]+) - 0x([0-9a-f]+) \+(com\.github\.Electron\.framework)\b/m.exec(content)
+  if (m) {
+    const [, baseAddress, , library] = m
+    const addresses = []
+    content.split('\n').forEach((line, i) => {
+      const a = parseStackTraceAddress(line, {baseAddress, library})
+      if (a) {
+        addresses.push({...a, i})
+      }
+    })
+    return addresses
+  }
 }
 
 const parseAddress = (line) => {
@@ -157,7 +172,7 @@ module.exports.testing = {parseAddress, parseAddresses}
 // 0   com.github.electron.framework  0x000000010d01fad3 0x10c497000 + 12094163
 // or:
 // 13  com.github.electron.framework  0x00000001016ee77f atom::api::WebContents::LoadURL(GURL const&, mate::Dictionary const&) + 831
-const parseStackTraceAddress = (line) => {
+const parseStackTraceAddress = (line, opts) => {
   const segments = line.split(/\s+/)
   const index = parseInt(segments[0])
   if (!isFinite(index)) return
@@ -169,6 +184,8 @@ const parseStackTraceAddress = (line) => {
   // images are of the format: 0x10eb25000
   if (/0x[0-9a-fA-F]+/.test(image)) {
     return {library, image, address}
+  } else if (opts && opts.baseAddress && opts.library === library) {
+    return {library, image: opts.baseAddress, address}
   } else {
     return {symbol: segments.slice(3).join(' ')}
   }
