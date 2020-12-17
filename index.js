@@ -112,7 +112,7 @@ const parseAddresses = (content) => {
 }
 
 const parseAsCompleteCrash = (content) => {
-  const m = /^0x([0-9a-f]+) - 0x([0-9a-f]+) \+(com\.github\.Electron\.framework)\b/m.exec(content)
+  const m = /^\s+0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+)\s+\+(com\.github\.Electron\.framework)\b/m.exec(content)
   if (m) {
     const [, baseAddress, , library] = m
     const addresses = []
