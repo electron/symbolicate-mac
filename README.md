@@ -10,8 +10,11 @@ a `cache` folder relative to the module. These files are large (~300MB) and may
 take some time download initially.
 
 ```
-npm install @electron/symbolicate-mac
+$ npx @electron/symbolicate-mac --version 11.0.3 --file /path/to/crash
 ```
+
+Make sure to pas `--mas` if you're trying to symbolicate a crash fram a Mac App
+Store Electron app!
 
 ## Usage
 
