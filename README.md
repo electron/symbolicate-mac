@@ -1,40 +1,52 @@
 # electron-symbolicate-mac
 
 Symbolicate an [Electron](https://www.electronjs.org/) macOS crash report that is
-missing symbols. Wraps
-[atos](https://www.manpagez.com/man/1/atos/)
-with convenient parsing and downloading of Electron symbols.
+missing symbols. Wraps [parse-breakpad](/nornagon/parse-breakpad) with
+convenient parsing and downloading of symbol files.
 
-This tool downloads the `dSYM` assets needed to symbolicate and stores them in
-a `cache` folder relative to the module. These files are large (~300MB) and may
+This tool downloads the symbol files needed to symbolicate and stores them in a
+`cache` folder relative to the module. These files are large (~400MB) and may
 take some time download initially.
 
 ```
-$ npx @electron/symbolicate-mac --version 11.0.3 --file /path/to/crash
+$ npx @electron/symbolicate-mac /path/to/crash
 ```
 
-Make sure to pas `--mas` if you're trying to symbolicate a crash fram a Mac App
-Store Electron app!
+Note that the crash file must be the _full_ crash, including the "Binary
+Images" section, or else symbolicate-mac won't be able to discover which exact
+version of Electron to use.
 
 ## Usage
 
-- Copy the lines missing symbols from a crash report to a local `crash.txt` file:
+- Obtain a complete crash dump, sampling report, or spindump.
 
 ```
-0   com.github.electron.framework 	0x000000010d01fad3 0x10c497000 + 12094163
-1   com.github.electron.framework 	0x000000010d095014 0x10c497000 + 12574740
+Process: Slack [2214]
+Path: /Applications/Slack.app/Contents/MacOS/Slack
+Identifier: com.tinyspeck.slackmacgap
+
+Thread 0 Crashed:: Dispatch queue: com.apple.main-thread
+[...]
+91 com.github.Electron.framework 0x000000010ae32a06 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*) + 2919558
+92 com.github.Electron.framework 0x000000010ae36119 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*) + 2933657
+[...]
+Binary Images:
+0x109ae8000 - 0x109b37fcf +com.tinyspeck.slackmacgap (4.18.0 - 6748) <AB3CB5D1-EB3F-388F-8C63-416A00DA1AAA> /Applications/Slack.app/Contents/MacOS/Slack
+0x109b49000 - 0x1115c0f7f +com.github.Electron.framework (13.1.6) <36C7F681-FAD6-3CD1-B327-6C1054C359C7> /Applications/Slack.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+[...]
 ```
 
-- Run `electron-symbolicate-mac` and specify the path to the file and the
-  version of Electron that was being used.
+- Run `electron-symbolicate-mac` and specify the path to the file
 
 ```sh
-electron-symbolicate-mac --file /path/to/crash.txt --version 1.4.14
+npx @electron/symbolicate-mac /path/to/crash.txt
 ```
 
-- The symbols of the given address(es) will be printed out:
+- The crash will be printed out, with symbols resolved:
 
 ```
-content::RenderProcessHostImpl::Cleanup() (in Electron Framework) (render_process_host_impl.cc:1908)
-content::ServiceWorkerProcessManager::Shutdown() (in Electron Framework) (__tree:165)
+[...]
+91 com.github.Electron.framework 0x000000010ae32a06 content::BrowserMainLoop::EarlyInitialization()
+92 com.github.Electron.framework 0x000000010ae36119 content::BrowserMainRunnerImpl::Initialize(content::MainFunctionParams const&)
+[...]
 ```

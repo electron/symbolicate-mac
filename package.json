@@ -1,41 +1,38 @@
 {
   "name": "@electron/symbolicate-mac",
-  "version": "1.2.0",
-  "description": "Symbolicate Electron macOS crashes",
+  "version": "2.0.0",
+  "description": "Symbolicate textual Electron macOS crashes",
   "main": "index.js",
   "repository": "https://github.com/electron/symbolicate-mac",
   "bin": {
-    "electron-symbolicate-mac": "./cli.js"
+    "electron-symbolicate-mac": "./index.js"
   },
   "scripts": {
     "test": "jest"
   },
   "keywords": [
-    "atos",
     "electron",
-    "symbols"
+    "symbols",
+    "breakpad",
+    "crash"
   ],
   "contributors": [
-    "Kevin Sawicki",
-    "Jeremy Apthorp <nornagon@nornagon.net>"
+    "Jeremy Rose <nornagon@nornagon.net>"
   ],
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.1",
     "electron-download": "^4.1.1",
     "extract-zip": "^1.6.0",
-    "yargs": "^6.6.0"
+    "parse-breakpad": "^0.1.0",
+    "yargs": "^17.0.1"
   },
-  "os": [
-    "darwin"
-  ],
   "engines": {
     "node": ">=4"
   },
   "devDependencies": {
     "@continuous-auth/semantic-release-npm": "^2.0.0",
     "jest": "^24.1.0",
-    "mocha": "^3.2.0",
     "semantic-release": "^15.13.16"
   }
 }

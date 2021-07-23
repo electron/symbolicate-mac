@@ -1,229 +1,213 @@
-const fs = require('fs')
-const os = require('os')
 const path = require('path')
-const ChildProcess = require('child_process')
+const fs = require('fs')
+const breakpad = require('parse-breakpad')
+const yargs = require('yargs')
 
-const electronDownload = require('electron-download')
-const extractZip = require('extract-zip')
-const mapLimit = require('async/mapLimit')
+const symbolicate = async (options) => {
+  const {force, file} = options
+  const cacheDirectory = path.join(__dirname, 'cache', 'breakpad_symbols')
 
-module.exports = (options, callback) => {
-  const {version, quiet, file, mas, force} = options
-  const platform = options.mas ? 'mas' : 'darwin'
-  const directory = path.join(__dirname, 'cache', version + '-' + platform)
-  const content = options.content != null ? options.content : fs.readFileSync(file, 'utf-8')
-  const addresses = parseAddresses(content)
+  const symbolCache = new Map
+  const dumpText = await fs.promises.readFile(file, 'utf8')
+  const images = binaryImages(dumpText)
 
-  download({version, quiet, directory, platform, force}, (error) => {
-    if (error != null) return callback(error)
+  let result = []
 
-    mapLimit(addresses, os.cpus().length, (a, cb) => {
-      if (a.symbols != null) {
-        cb(null, a.symbols)
-      } else {
-        const {library, image, addresses} = a
-        const libraryPath = getLibraryPath(directory, library)
-        symbolicate({library: libraryPath, image, addresses: addresses.map(a => a.address)}).then((symbols) => {
-          cb(null, symbols.map((symbol, i) => ({symbol, i: addresses[i].i, replace: addresses[i].replace})))
+  for (const line of dumpText.split(/\r?\n/)) {
+    const parsedLine = parseAddressLine(line)
+    if (parsedLine) {
+      const library = parsedLine.libraryBaseName || parsedLine.libraryId
+      const image = images.find(i => i.library === library || path.basename(i.path) === library)
+      if (image) {
+        const offset = parsedLine.address - image.startAddress
+        const res = await symbolicateOne({
+          image,
+          offset
         })
-      }
-    }, (err, syms) => {
-      if (err) callback(err)
-      const concatted = syms.reduce((m, o) => m.concat(o), [])
-      let split = content.split('\n')
-      concatted.map((sym) => {
-        if (sym.replace) {
-          split[sym.i] = split[sym.i].substr(0, sym.replace.from) + sym.symbol + split[sym.i].substr(sym.replace.from + sym.replace.length)
-        } else {
-          split[sym.i] = sym.symbol
+        if (res) {
+          result.push(line.substr(0, parsedLine.replace.from) + res.func.name + line.substr(parsedLine.replace.from + parsedLine.replace.length))
+          continue
         }
-      })
-      callback(null, split)
-    })
-  })
-}
-
-const download = (options, callback) => {
-  const {version, quiet, directory, platform, force} = options
-
-  if (fs.existsSync(directory) && !force) return callback()
-
-  electronDownload({
-    version: version,
-    dsym: true,
-    platform,
-    arch: 'x64',
-    quiet: quiet,
-    force: force
-  }, (error, zipPath) => {
-    if (error != null) return callback(error)
-    extractZip(zipPath, {dir: directory}, callback)
-  })
-}
-
-const exec = (command, args, stdin) => {
-  return new Promise((resolve, reject) => {
-    const proc = ChildProcess.spawn(command, args)
-    let output = ''
-    let error = ''
-    proc.on('close', (code) => {
-      if (code === 0) {
-        resolve(output)
-      } else {
-        error = `${command} exited with ${code}: ${error}`
-        reject(new Error(error))
       }
-    })
-    proc.stdout.on('data', (data) => {
-      output += data.toString()
-    })
-    proc.stderr.on('data', (data) => {
-      error += data.toString()
-    })
-    proc.stdin.write(stdin)
-    proc.stdin.end()
-  })
-}
-
-const symbolicate = async ({library, image, addresses}) => {
-  const atos_stdout = await exec('atos', ['-o', library, '-l', image], addresses.join('\n'))
-  return atos_stdout.trim().split('\n')
-}
-
-const groupBy = (xs, f) => {
-  const groups = new Map
-  for (const x of xs) {
-    const key = f(x)
-    if (!groups.has(key))
-      groups.set(key, [])
-    groups.get(key).push(x)
+    }
+    result.push(line)
   }
-  return Array.from(groups.values())
+
+  return result.join('\n')
+
+  async function getSymbolFile(moduleId, moduleName) {
+    const pdb = moduleName.replace(/^\//, '')
+    const symbolFileName = pdb.replace(/(\.pdb)?$/, '.sym')
+    const symbolPath = path.join(cacheDirectory, pdb, moduleId, symbolFileName)
+    if (fs.existsSync(symbolPath) && !force) {
+      return breakpad.parse(fs.createReadStream(symbolPath))
+    }
+    if (!fs.existsSync(symbolPath) && (!fs.existsSync(path.dirname(symbolPath)) || force)) {
+      for (const baseUrl of SYMBOL_BASE_URLS) {
+        if (await fetchSymbol(cacheDirectory, baseUrl, pdb, moduleId, symbolFileName))
+          return breakpad.parse(fs.createReadStream(symbolPath))
+      }
+    }
+  }
+
+  async function symbolicateOne({image, offset}) {
+    const { debugId, path: modulePath } = image
+    if (!symbolCache.has(debugId)) {
+      const parsed = await getSymbolFile(debugId.replace(/-/g, '') + '0', path.basename(modulePath))
+      symbolCache.set(debugId, parsed)
+    }
+    const parsed = symbolCache.get(debugId)
+    if (parsed)
+      return parsed.lookup(offset)
+  }
 }
 
-const parseAddresses = (content) => {
-  const addresses = parseAsSentryDump(content) || parseAsCompleteCrash(content) || parseAsLines(content)
-  return groupBy(addresses, a => `${a.library};${a.image}`).map(as => {
-    const {library, image} = as[0]
-    return library == null
-      ? {symbols: as}
-      : {library, image, addresses: as}
-  })
+const binaryImages = (dumpText) => {
+  // e.g.
+  //  0x109ae8000 - 0x109b37fcf +com.tinyspeck.slackmacgap (4.18.0 - 6748) <AB3CB5D1-EB3F-388F-8C63-416A00DA1AAA> /Applications/Slack.app/Contents/MacOS/Slack
+  //  0x109b49000 - 0x1115c0f7f +com.github.Electron.framework (13.1.6) <36C7F681-FAD6-3CD1-B327-6C1054C359C7> /Applications/Slack.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+  //  0x112051000 - 0x11205dfff com.apple.StoreKit (1.0 - 459) <3E2D404A-55AA-33F9-9B22-5BA474562E6B> /System/Library/Frameworks/StoreKit.framework/Versions/A/StoreKit
+  //  0x112073000 - 0x112086ff3 +com.github.Squirrel (1.0 - 1) <68FF73B4-1C5A-3235-B391-3EA358FE89C0> /Applications/Slack.app/Contents/Frameworks/Squirrel.framework/Versions/A/Squirrel
+  //  0x11209f000 - 0x1120e6fff +com.electron.reactive (3.1.0 - 0.0.0) <5DED8556-18AB-3090-ADBF-AEB05C656853> /Applications/Slack.app/Contents/Frameworks/ReactiveObjC.framework/Versions/A/ReactiveObjC
+  const re = /^\s*0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+) (\+)?(\S+) \(([^)]+)\) <([0-9A-F-]+)> (.+)$/mg
+  let m
+  const images = []
+  while (m = re.exec(dumpText)) {
+    const [, startAddress, endAddress, plus, library, version, debugId, path] = m
+    images.push({
+      startAddress: parseInt(startAddress, 16),
+      endAddress: parseInt(endAddress, 16),
+      plus,
+      library,
+      version,
+      debugId,
+      path,
+    })
+  }
+  return images
 }
 
-const parseAsCompleteCrash = (content) => {
-  const m = /^\s+0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+)\s+\+(com\.github\.Electron\.framework)\b/m.exec(content)
+function parseAddressLine(line) {
+  return parseAsCrashReportLine(line) || parseAsSpindumpLine(line) || parseAsSamplingLine(line)
+}
+function parseAsCrashReportLine(line) {
+  // from a system crash report:
+  // 1 dyld 0x00007fff69ed6975 ImageLoaderMachO::validateFirstPages(linkedit_data_command const*, int, unsigned char const*, unsigned long, long long, ImageLoader::LinkContext const&) + 145
+  // 13 com.github.Electron.framework 0x000000010cfa931d node::binding::get_linked_module(char const*) + 3549
+  // 1   com.github.Electron.framework 	0x000000010c99e684 -[ElectronNSWindowDelegate windowWillClose:] + 36 (electron_ns_window_delegate.mm:251)
+  // 15  com.github.Electron.framework 	0x00000001118b1a86 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*) + 10125238
+  const m = /^(\s*\d+\s+(\S+)\s+0x([0-9a-f]+)\s+)(.+? \+ \d+)/.exec(line)
   if (m) {
-    const [, baseAddress, , library] = m
-    const addresses = []
-    content.split('\n').forEach((line, i) => {
-      const a = parseStackTraceAddress(line, {baseAddress, library})
-      if (a) {
-        addresses.push({...a, i})
+    const [, prefix, libraryId, address, symbolWithOffset] = m
+    return {
+      libraryId,
+      address: parseInt(address, 16),
+      replace: { from: prefix.length, length: symbolWithOffset.length }
+    }
+  }
+}
+function parseAsSpindumpLine(line) {
+  // from spindump
+  //  1000  ElectronMain + 134 (Electron Framework + 114470) [0x10e3f8f26]
+  //    1000  electron::fuses::IsRunAsNodeEnabled() + 5717170 (Electron Framework + 7609010) [0x10eb1eab2]
+  //      1000  electron::fuses::IsRunAsNodeEnabled() + 5716934 (Electron Framework + 7608774) [0x10eb1e9c6]
+  // 54 electron::fuses::IsRunAsNodeEnabled() + 5722152 (Electron Framework + 7600776) [0x1129dfa88]
+  // *54 ipc_mqueue_receive_continue + 0 (kernel + 389664) [0xffffff800026f220]
+  // 54 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*) + 2928702 (Electron Framework + 19826782) [0x11358885e]
+  const m = /(?<=\d+\s+)(\S.*? \+ \d+|\?\?\?) \((.+?) \+ (\d+)\) \[0x([0-9a-f]+)\]/.exec(line)
+  if (m) {
+    const [, toReplace, libraryBaseName, offset, address] = m
+    return {
+      address: parseInt(address, 16),
+      libraryBaseName,
+      offset: parseInt(offset, 10),
+      replace: { from: m.index, length: toReplace.length }
+    }
+  }
+}
+function parseAsSamplingLine(line) {
+  // from sampling
+  // + 2433 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*)  (in Electron Framework) + 2917380  [0x10f6c5a64]
+  // +   ! 2426 __CFRunLoopServiceMachPort  (in CoreFoundation) + 247  [0x7fff395789d5]
+  // +   !  : | 4 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*)  (in Electron Framework) + 13325775  [0x1100b2c2f]
+  //   9       v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*)  (in Electron Framework) + 9711676  [0x10fd4069c]
+  const m = /(?<=\d+\s+)(\S.*?)\s+\(in (.+?)\).*?\[0x([0-9a-f]+)\]/.exec(line)
+  if (m) {
+    const [, symbol, libraryBaseName, address] = m
+    return {
+      address: parseInt(address, 16),
+      libraryBaseName,
+      replace: { from: m.index, length: symbol.length }
+    }
+  }
+}
+
+const SYMBOL_BASE_URLS = [
+  'https://symbols.mozilla.org/try',
+  'https://symbols.electronjs.org',
+]
+
+function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
+  const url = `${baseUrl}/${encodeURIComponent(pdb)}/${id}/${encodeURIComponent(symbolFileName)}`
+  const symbolPath = path.join(directory, pdb, id, symbolFileName)
+  return new Promise((resolve, reject) => {
+    // We use curl here in order to avoid having to deal with redirects +
+    // gzip + saving to a file ourselves. It would be more portable to
+    // handle this in JS rather than by shelling out, though, so TODO.
+    const child = require('child_process').spawn('curl', [
+      // We don't need progress bars.
+      '--silent',
+
+      // The Mozilla symbol server redirects to S3, so follow that
+      // redirect.
+      '--location',
+
+      // We want to create all the parent directories for the target path,
+      // which is breakpad_symbols/foo.pdb/0123456789ABCDEF/foo.sym
+      '--create-dirs',
+
+      // The .sym file is gzipped, but minidump_stackwalk needs it
+      // uncompressed, so ask curl to ungzip it for us.
+      '--compressed',
+
+      // If we get a 404, don't write anything and exit with code 22. The
+      // parent directories will still be created, though.
+      '--fail',
+
+      // Save the file directly into the cache.
+      '--output', symbolPath,
+
+      // This is the URL we want to fetch.
+      url
+    ])
+
+    child.once('close', (code) => {
+      if (code === 0) {
+        resolve(true)
+      } else {
+        if (code === 22) { // 404
+          resolve(false)
+        } else {
+          reject(new Error(`failed to download ${url} (code ${code})`))
+        }
       }
     })
-    return addresses
-  }
-}
-
-const parseAddress = (line) => {
-  if (/\(in [^)]+\)/.test(line)) {
-    return parseSamplingAddress(line)
-  } else if (/frame #/.test(line)) {
-    return parseDebuggerAddress(line)
-  } else {
-    return parseStackTraceAddress(line)
-  }
-}
-
-const parseAsLines = (content) => {
-  const addresses = []
-  content.split('\n').forEach((line, i) => {
-    const a = parseAddress(line)
-    if (a) {
-      addresses.push({...a, i})
-    }
   })
-  return addresses
 }
 
-const parseAsSentryDump = (content) => {
-  try {
-    const json = JSON.parse(content)
-    if (json.debug_meta == null || json.exception == null)
-      return
-    return json.exception.values[0].stacktrace.frames.map(frame => {
-      const libraryFileName = path.basename(frame.package)
-      const library = libraryFileName === 'Electron Framework'
-          ? 'com.github.electron.framework' : libraryFileName
-      const address = frame.instruction_addr
-      const imageData = json.debug_meta.images.find(image => image.code_file === frame.package)
-      const image = imageData ? imageData.image_addr : null
-      return {library, address, image}
-    }).reverse() // Sentry puts the bottom of the stack at the beginning of the array
-  } catch (e) {
-    // Not JSON. Thus not a Sentry dump.
-  }
-}
+module.exports = { symbolicate, testing: { parseAddress: parseAddressLine } }
 
-module.exports.testing = {parseAddress, parseAddresses}
-
-// Lines from stack traces are of the format:
-// 0   com.github.electron.framework  0x000000010d01fad3 0x10c497000 + 12094163
-// or:
-// 13  com.github.electron.framework  0x00000001016ee77f atom::api::WebContents::LoadURL(GURL const&, mate::Dictionary const&) + 831
-const parseStackTraceAddress = (line, opts) => {
-  const segments = line.split(/\s+/)
-  const index = parseInt(segments[0])
-  if (!isFinite(index)) return
-  
-  const library = segments[1]
-  const address = segments[2]
-  const image = segments[3]
-
-  // images are of the format: 0x10eb25000
-  if (/0x[0-9a-fA-F]+/.test(image)) {
-    return {library, image, address}
-  } else if (opts && opts.baseAddress && opts.library === library) {
-    return {library, image: opts.baseAddress, address}
-  } else {
-    return {symbol: segments.slice(3).join(' ')}
-  }
-}
-
-// Lines from macOS sampling reports are of the format:
-// 2189 ???  (in Electron Framework)  load address 0x1052bd000 + 0x3f8e36  [0x1056b5e36]
-const parseSamplingAddress = (line) => {
-  const libraryName = line.match(/\(in ([^)]+)\)/)[1]
-  if (libraryName === 'Electron Framework' || libraryName === 'libnode.dylib') {
-    const addressMatch = line.match(/\[(0x[0-9a-fA-F]+)]/)
-    if (!addressMatch) return
-
-    const imageMatch = line.match(/(0x[0-9a-fA-F]+)/)
-    if (!imageMatch) return
-
-    const library = libraryName === 'Electron Framework'
-      ? 'com.github.electron.framework'
-      : libraryName
-    const address = addressMatch[1]
-    const image = imageMatch[1]
-    const [, symbol, func] = line.match(/^.*?\d+ ((.+?)  .*)$/)
-
-    if (func === '???') {
-      const replace = line.match(/\?\?\?  \(in [^)]+\)/)
-      return {library, image, address, replace: {from: replace.index, length: replace[0].length}}
-    }
-  }
-}
-
-const getLibraryPath = (rootDirectory, library) => {
-  switch (library) {
-    case 'libnode.dylib':
-      return path.join(rootDirectory, 'libnode.dylib.dSYM', 'Contents', 'Resources', 'DWARF', 'libnode.dylib')
-    default:
-      return [
-        path.join(rootDirectory, 'Electron Framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework'),
-        path.join(rootDirectory, 'Electron Framework.framework.dSYM', 'Contents', 'Resources', 'DWARF', 'Electron Framework'),
-      ].find(fs.existsSync)
-  }
+if (!module.parent) {
+  const argv = yargs
+    .command('$0 <file>', 'symbolicate a textual crash dump', () => {}, (argv) => {
+      yargs.positional('file', {
+        describe: 'path to crash dump',
+      }).option('force', {
+        describe: 'redownload symbols if present in cache',
+        type: 'boolean'
+      })
+    })
+    .help()
+    .argv
+  symbolicate(argv).then(console.log)
 }
