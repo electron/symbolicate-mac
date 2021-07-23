@@ -33,6 +33,6 @@
   "devDependencies": {
     "@continuous-auth/semantic-release-npm": "^2.0.0",
     "jest": "^24.1.0",
-    "semantic-release": "^15.13.16"
+    "semantic-release": "^17.2.3"
   }
 }
