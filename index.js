@@ -200,13 +200,15 @@ module.exports = { symbolicate, testing: { parseAddress: parseAddressLine } }
 
 if (!module.parent) {
   const argv = yargs
-    .command('$0 <file>', 'symbolicate a textual crash dump', () => {}, (argv) => {
-      yargs.positional('file', {
-        describe: 'path to crash dump',
-      }).option('force', {
-        describe: 'redownload symbols if present in cache',
-        type: 'boolean'
-      })
+    .command('$0 <file>', 'symbolicate a textual crash dump', (yargs) => {
+      return yargs
+        .positional('file', {
+          describe: 'path to crash dump',
+        })
+        .option('force', {
+          describe: 'redownload symbols if present in cache',
+          type: 'boolean'
+        })
     })
     .help()
     .argv
