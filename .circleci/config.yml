@@ -21,12 +21,12 @@ version: 2
 jobs:
   test-mac:
     macos:
-      xcode: "10.2.0"
+      xcode: "12.4.0"
     <<: *steps-test
 
   release:
     macos:
-      xcode: "10.2.0"
+      xcode: "12.4.0"
     steps:
       - checkout
       - *step-restore-cache
