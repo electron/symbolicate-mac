@@ -1,6 +1,6 @@
 const { symbolicate } = require('..')
 
-const TIMEOUT = 2 * 60 * 1000;
+const TIMEOUT = 10 * 60_000;
 
 describe('symbolication', function () {
   it('symbolicates a crash report', async () => {
