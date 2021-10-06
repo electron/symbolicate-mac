@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+//@ts-check
 const path = require('path')
 const fs = require('fs')
 const breakpad = require('parse-breakpad')
@@ -200,7 +201,7 @@ function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
 
 module.exports = { symbolicate, testing: { parseAddress: parseAddressLine } }
 
-if (!module.parent) {
+if (require.main === module) {
   const argv = yargs
     .command('$0 <file>', 'symbolicate a textual crash dump', (yargs) => {
       return yargs
