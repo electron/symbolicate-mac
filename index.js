@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
-//@ts-check
 const path = require('path')
 const fs = require('fs')
+const stream = require('stream')
+const { promisify } = require('util')
+
 const breakpad = require('parse-breakpad')
+const got = require('got');
+const mkdirp = require('mkdirp');
 const yargs = require('yargs')
 
 const symbolicate = async (options) => {
@@ -151,52 +155,31 @@ const SYMBOL_BASE_URLS = [
   'https://symbols.electronjs.org',
 ]
 
-function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
+async function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
   const url = `${baseUrl}/${encodeURIComponent(pdb)}/${id}/${encodeURIComponent(symbolFileName)}`
   const symbolPath = path.join(directory, pdb, id, symbolFileName)
-  return new Promise((resolve, reject) => {
-    // We use curl here in order to avoid having to deal with redirects +
-    // gzip + saving to a file ourselves. It would be more portable to
-    // handle this in JS rather than by shelling out, though, so TODO.
-    const child = require('child_process').spawn('curl', [
-      // We don't need progress bars.
-      '--silent',
+  const pipeline = promisify(stream.pipeline)
 
-      // The Mozilla symbol server redirects to S3, so follow that
-      // redirect.
-      '--location',
+  // ensure path is created
+  await mkdirp(path.dirname(symbolPath))
 
-      // We want to create all the parent directories for the target path,
-      // which is breakpad_symbols/foo.pdb/0123456789ABCDEF/foo.sym
-      '--create-dirs',
-
-      // The .sym file is gzipped, but minidump_stackwalk needs it
-      // uncompressed, so ask curl to ungzip it for us.
-      '--compressed',
-
-      // If we get a 404, don't write anything and exit with code 22. The
-      // parent directories will still be created, though.
-      '--fail',
-
-      // Save the file directly into the cache.
-      '--output', symbolPath,
-
-      // This is the URL we want to fetch.
-      url
-    ])
-
-    child.once('close', (code) => {
-      if (code === 0) {
-        resolve(true)
-      } else {
-        if (code === 22) { // 404
-          resolve(false)
-        } else {
-          reject(new Error(`failed to download ${url} (code ${code})`))
-        }
-      }
+  // decompress the gzip
+  try {
+    const str = got.stream(url, {
+      decompress: true,
+      followRedirect: true,
     })
-  })
+    // create symbol
+    await pipeline(str,fs.createWriteStream(symbolPath));
+  } catch(err) {
+    if (err.message.startsWith('Response code 404')) {
+      return false;
+    } else {
+      throw err;
+    }
+  }
+
+  return true;
 }
 
 module.exports = { symbolicate, testing: { parseAddress: parseAddressLine } }
