@@ -21,9 +21,8 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "async": "^2.6.1",
-    "electron-download": "^4.1.1",
-    "extract-zip": "^1.6.0",
+    "got": "^11.8.2",
+    "mkdirp": "^1.0.4",
     "parse-breakpad": "^0.1.0",
     "yargs": "^17.0.1"
   },
