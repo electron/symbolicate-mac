@@ -6,8 +6,8 @@ const stream = require('stream')
 const { promisify } = require('util')
 
 const breakpad = require('parse-breakpad')
-const got = require('got');
-const mkdirp = require('mkdirp');
+const got = require('got')
+const mkdirp = require('mkdirp')
 const yargs = require('yargs')
 
 const symbolicate = async (options) => {
@@ -89,7 +89,7 @@ const binaryImages = (dumpText) => {
       library,
       version,
       debugId,
-      path,
+      path
     })
   }
   return images
@@ -170,16 +170,16 @@ async function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
       followRedirect: true,
     })
     // create symbol
-    await pipeline(str,fs.createWriteStream(symbolPath));
-  } catch(err) {
+    await pipeline(str, fs.createWriteStream(symbolPath))
+  } catch (err) {
     if (err.message.startsWith('Response code 404')) {
-      return false;
+      return false
     } else {
-      throw err;
+      throw err
     }
   }
 
-  return true;
+  return true
 }
 
 module.exports = { symbolicate, testing: { parseAddress: parseAddressLine } }
