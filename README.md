@@ -1,7 +1,7 @@
 # electron-symbolicate-mac
 
 Symbolicate an [Electron](https://www.electronjs.org/) macOS crash report that is
-missing symbols. Wraps [parse-breakpad](/nornagon/parse-breakpad) with
+missing symbols. Wraps [parse-breakpad](https://github.com/nornagon/parse-breakpad) with
 convenient parsing and downloading of symbol files.
 
 This tool downloads the symbol files needed to symbolicate and stores them in a
