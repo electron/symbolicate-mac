@@ -30,8 +30,7 @@
     "node": ">=4"
   },
   "devDependencies": {
-    "@continuous-auth/semantic-release-npm": "^2.0.0",
-    "jest": "^24.1.0",
-    "semantic-release": "^17.4.4"
+    "@continuous-auth/semantic-release-npm": "^3.0.0",
+    "jest": "^29.0.0"
   }
 }
