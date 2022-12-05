@@ -27,7 +27,7 @@ Exception Note: EXC_CORPSE_NOTIFY
 
 kernel messages:
 -4 sec CODE SIGNING: cs_invalid_page(0x11212c000): p=2214[Slack] final status 0x3002200, denying page sending SIGKILL
--4 sec CODE SIGNING: process 2214[Slack]: rejecting invalid page at address 0x11212c000 from offset 0x0 in file \\"/Applications/Slack.app/Contents/Resources/app-x64.asar.unpacked/node_modules/macos-notification-state/build/Release/notificationstate.node\\" (cs_mtime:1626195691.0 == mtime:1626195691.0) (signed:1 validated:1 tainted:1 wpmapped:0 slid:0)
+-4 sec CODE SIGNING: process 2214[Slack]: rejecting invalid page at address 0x11212c000 from offset 0x0 in file "/Applications/Slack.app/Contents/Resources/app-x64.asar.unpacked/node_modules/macos-notification-state/build/Release/notificationstate.node" (cs_mtime:1626195691.0 == mtime:1626195691.0) (signed:1 validated:1 tainted:1 wpmapped:0 slid:0)
 
 VM Regions Near 0x11212c000:
 MALLOC_LARGE 000000011212b000-000000011212c000 [ 4K] rw-/rwx SM=PRV
@@ -1003,7 +1003,7 @@ Call graph:
     2433 Thread_228493: AMCP Logging Spool
     + 2433 thread_start  (in libsystem_pthread.dylib) + 15  [0x7fff73818b8b]
     +   2433 _pthread_start  (in libsystem_pthread.dylib) + 148  [0x7fff7381d109]
-    +     2433 void* caulk::thread_proxy<std::__1::tuple<caulk::thread::attributes, void (caulk::concurrent::details::worker_thread::*)(), std::__1::tuple<caulk::concurrent::details::worker_thread*> > >(void*)  (in caulk) + 45  [0x7fff6d1ec1e4]
+    +     2433 caulk::thread_proxy<std::__1::tuple<caulk::thread::attributes, void (caulk::concurrent::details::worker_thread::*)(), std::__1::tuple<caulk::concurrent::details::worker_thread*> > >(void*)  (in caulk) + 45  [0x7fff6d1ec1e4]
     +       2433 caulk::concurrent::details::worker_thread::run()  (in caulk) + 30  [0x7fff6d1ec7c4]
     +         2433 caulk::semaphore::timed_wait(double)  (in caulk) + 106  [0x7fff6d1ec9b2]
     +           2433 caulk::mach::semaphore::wait()  (in caulk) + 16  [0x7fff6d1ecb16]
@@ -1011,7 +1011,7 @@ Call graph:
     2433 Thread_228494
     + 2433 thread_start  (in libsystem_pthread.dylib) + 15  [0x7fff73818b8b]
     +   2433 _pthread_start  (in libsystem_pthread.dylib) + 148  [0x7fff7381d109]
-    +     2433 void* caulk::thread_proxy<std::__1::tuple<caulk::thread::attributes, void (caulk::concurrent::details::worker_thread::*)(), std::__1::tuple<caulk::concurrent::details::worker_thread*> > >(void*)  (in caulk) + 45  [0x7fff6d1ec1e4]
+    +     2433 caulk::thread_proxy<std::__1::tuple<caulk::thread::attributes, void (caulk::concurrent::details::worker_thread::*)(), std::__1::tuple<caulk::concurrent::details::worker_thread*> > >(void*)  (in caulk) + 45  [0x7fff6d1ec1e4]
     +       2433 caulk::concurrent::details::worker_thread::run()  (in caulk) + 30  [0x7fff6d1ec7c4]
     +         2433 caulk::semaphore::timed_wait(double)  (in caulk) + 106  [0x7fff6d1ec9b2]
     +           2433 caulk::mach::semaphore::wait()  (in caulk) + 16  [0x7fff6d1ecb16]
@@ -1586,7 +1586,7 @@ Num samples:      1000 (1-1000)
 CPU Time:         0.036s (117.7M cycles, 60.6M instructions, 1.94c/i)
 Note:             1 idle work queue thread omitted
 
-  Thread 0x3316    DispatchQueue \\"com.apple.main-thread\\"(1)    Thread name \\"CrBrowserMain\\"    1000 samples (1-1000)    priority 46 (base 46)    cpu time 0.023s (76.7M cycles, 42.4M instructions, 1.81c/i)
+  Thread 0x3316    DispatchQueue "com.apple.main-thread"(1)    Thread name "CrBrowserMain"    1000 samples (1-1000)    priority 46 (base 46)    cpu time 0.023s (76.7M cycles, 42.4M instructions, 1.81c/i)
   1000  start (libdyld.dylib + 109769) [0x7fff73618cc9]
     1000  ??? (Slack + 6118) [0x10e3817e6]
       1000  ElectronMain (Electron Framework + 114470) [0x10e3f8f26]
@@ -1677,7 +1677,7 @@ Note:             1 idle work queue thread omitted
                                                                           1    blink::mojom::KeepAliveHandleFactoryStubDispatch::Accept(blink::mojom::KeepAliveHandleFactory*, mojo::Message*) (Electron Framework + 6432053) [0x10e9ff535]
                                                                             1    content::KeepAliveHandleFactory::Context::IssueKeepAliveHandle(mojo::PendingReceiver<blink::mojom::KeepAliveHandle>) (Electron Framework + 21550055) [0x10f86a3e7] (running)
 
-  Thread 0x3440    Thread name \\"ThreadPoolServiceThread\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3440    Thread name "ThreadPoolServiceThread"    1000 samples (1-1000)    priority 31 (base 31)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1689,7 +1689,7 @@ Note:             1 idle work queue thread omitted
                   1000  kevent64 (libsystem_kernel.dylib + 39830) [0x7fff73762b96]
                    *1000  ??? (kernel + 6632800) [0xffffff8000853560]
 
-  Thread 0x3442    Thread name \\"ThreadPoolBackgroundWorker\\"    1000 samples (1-1000)    priority 0 (base 0)
+  Thread 0x3442    Thread name "ThreadPoolBackgroundWorker"    1000 samples (1-1000)    priority 0 (base 0)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1700,7 +1700,7 @@ Note:             1 idle work queue thread omitted
                 1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
                  *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3444    Thread name \\"Chrome_IOThread\\"    1000 samples (1-1000)    priority 31 (base 31)    cpu time 0.007s (22.5M cycles, 7.3M instructions, 3.10c/i)
+  Thread 0x3444    Thread name "Chrome_IOThread"    1000 samples (1-1000)    priority 31 (base 31)    cpu time 0.007s (22.5M cycles, 7.3M instructions, 3.10c/i)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1712,7 +1712,7 @@ Note:             1 idle work queue thread omitted
                   1000  kevent64 (libsystem_kernel.dylib + 39830) [0x7fff73762b96]
                    *1000  ??? (kernel + 6632800) [0xffffff8000853560]
 
-  Thread 0x3445    Thread name \\"MemoryInfra\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3445    Thread name "MemoryInfra"    1000 samples (1-1000)    priority 31 (base 31)
   1000  <truncated backtrace>
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
@@ -1796,12 +1796,12 @@ Note:             1 idle work queue thread omitted
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3494    Thread name \\"NetworkConfigWatcher\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3494    Thread name "NetworkConfigWatcher"    1000 samples (1-1000)    priority 31 (base 31)
   1000  <truncated backtrace>
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3495    Thread name \\"CrShutdownDetector\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3495    Thread name "CrShutdownDetector"    1000 samples (1-1000)    priority 31 (base 31)
   1000  <truncated backtrace>
     1000  read (libsystem_kernel.dylib + 6174) [0x7fff7375a81e]
      *1000  hndl_unix_scall64 + 22 (kernel + 778758) [0xffffff80002be206]
@@ -1815,12 +1815,12 @@ Note:             1 idle work queue thread omitted
                      *1000  ??? (kernel + 1283281) [0xffffff80003394d1]
                        *1000  machine_switch_context + 200 (kernel + 2353320) [0xffffff800043e8a8]
 
-  Thread 0x3496    Thread name \\"NetworkConfigWatcher\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3496    Thread name "NetworkConfigWatcher"    1000 samples (1-1000)    priority 31 (base 31)
   1000  <truncated backtrace>
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3498    Thread name \\"CompositorTileWorker1\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3498    Thread name "CompositorTileWorker1"    1000 samples (1-1000)    priority 31 (base 31)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1829,7 +1829,7 @@ Note:             1 idle work queue thread omitted
             1000  __psynch_cvwait (libsystem_kernel.dylib + 14466) [0x7fff7375c882]
              *1000  psynch_cvcontinue + 0 (pthread + 18722) [0xffffff7f819bd922]
 
-  Thread 0x3499    Thread name \\"ThreadPoolSingleThreadForegroundBlocking0\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3499    Thread name "ThreadPoolSingleThreadForegroundBlocking0"    1000 samples (1-1000)    priority 31 (base 31)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1851,12 +1851,12 @@ Note:             1 idle work queue thread omitted
         2    semaphore_wait_trap (libsystem_kernel.dylib + 3638) [0x7fff73759e36]
          *2    semaphore_wait_continue + 0 (kernel + 1325840) [0xffffff8000343b10]
 
-  Thread 0x34c4    Thread name \\"NetworkConfigWatcher\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x34c4    Thread name "NetworkConfigWatcher"    1000 samples (1-1000)    priority 31 (base 31)
   1000  <truncated backtrace>
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3500    Thread name \\"com.apple.NSEventThread\\"    1000 samples (1-1000)    priority 46 (base 46)
+  Thread 0x3500    Thread name "com.apple.NSEventThread"    1000 samples (1-1000)    priority 46 (base 46)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  _NSEventThread + 132 (AppKit + 1976660) [0x7fff3698a954]
@@ -1866,12 +1866,12 @@ Note:             1 idle work queue thread omitted
               1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
                *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3512    Thread name \\"ThreadPoolSingleThreadSharedForegroundBlocking1\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x3512    Thread name "ThreadPoolSingleThreadSharedForegroundBlocking1"    1000 samples (1-1000)    priority 31 (base 31)
   1000  <truncated backtrace>
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x3513    Thread name \\"CacheThread_BlockFile\\"    1000 samples (1-1000)    priority 31 (base 31)    cpu time <0.001s (242.9K cycles, 29.5K instructions, 8.24c/i)
+  Thread 0x3513    Thread name "CacheThread_BlockFile"    1000 samples (1-1000)    priority 31 (base 31)    cpu time <0.001s (242.9K cycles, 29.5K instructions, 8.24c/i)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1882,12 +1882,12 @@ Note:             1 idle work queue thread omitted
                 1000  kevent64 (libsystem_kernel.dylib + 39830) [0x7fff73762b96]
                  *1000  ??? (kernel + 6632800) [0xffffff8000853560]
 
-  Thread 0x3528    Thread name \\"ThreadPoolSingleThreadSharedBackgroundBlocking2\\"    1000 samples (1-1000)    priority 0 (base 0)
+  Thread 0x3528    Thread name "ThreadPoolSingleThreadSharedBackgroundBlocking2"    1000 samples (1-1000)    priority 0 (base 0)
   1000  <truncated backtrace>
     1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
      *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x11d18    Thread name \\"PowerSaveBlocker\\"    1000 samples (1-1000)    priority 31 (base 31)
+  Thread 0x11d18    Thread name "PowerSaveBlocker"    1000 samples (1-1000)    priority 31 (base 31)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1901,7 +1901,7 @@ Note:             1 idle work queue thread omitted
                       1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
                        *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x37c8d    Thread name \\"AMCP Logging Spool\\"    1000 samples (1-1000)    priority 19 (base 19)
+  Thread 0x37c8d    Thread name "AMCP Logging Spool"    1000 samples (1-1000)    priority 19 (base 19)
   1000  <truncated backtrace>
     1000  semaphore_wait_trap (libsystem_kernel.dylib + 3638) [0x7fff73759e36]
      *1000  semaphore_wait_continue + 0 (kernel + 1325840) [0xffffff8000343b10]
@@ -1911,7 +1911,7 @@ Note:             1 idle work queue thread omitted
     1000  semaphore_wait_trap (libsystem_kernel.dylib + 3638) [0x7fff73759e36]
      *1000  semaphore_wait_continue + 0 (kernel + 1325840) [0xffffff8000343b10]
 
-  Thread 0x42fc34    Thread name \\"ThreadPoolForegroundWorker\\"    1000 samples (1-1000)    priority 31 (base 31)    cpu time <0.001s (1546.0K cycles, 831.7K instructions, 1.86c/i)
+  Thread 0x42fc34    Thread name "ThreadPoolForegroundWorker"    1000 samples (1-1000)    priority 31 (base 31)    cpu time <0.001s (1546.0K cycles, 831.7K instructions, 1.86c/i)
   1000  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     1000  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       1000  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -1922,7 +1922,7 @@ Note:             1 idle work queue thread omitted
                 1000  mach_msg_trap (libsystem_kernel.dylib + 3578) [0x7fff73759dfa]
                  *1000  ipc_mqueue_receive_continue + 0 (kernel + 1020080) [0xffffff80002f90b0]
 
-  Thread 0x430f5e    Thread name \\"ThreadPoolForegroundWorker\\"    778 samples (223-1000)    priority 31-46 (base 31)    cpu time 0.002s (6.7M cycles, 5.7M instructions, 1.16c/i)
+  Thread 0x430f5e    Thread name "ThreadPoolForegroundWorker"    778 samples (223-1000)    priority 31-46 (base 31)    cpu time 0.002s (6.7M cycles, 5.7M instructions, 1.16c/i)
   778  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     778  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       778  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
@@ -2013,7 +2013,7 @@ Note:             1 idle work queue thread omitted
                                                      *1    ??? (kernel + 1283281) [0xffffff80003394d1]
                                                        *1    machine_switch_context + 200 (kernel + 2353320) [0xffffff800043e8a8]
 
-  Thread 0x430f5f    Thread name \\"ThreadPoolForegroundWorker\\"    778 samples (223-1000)    priority 31 (base 31)    cpu time <0.001s (155.4K cycles, 60.7K instructions, 2.56c/i)
+  Thread 0x430f5f    Thread name "ThreadPoolForegroundWorker"    778 samples (223-1000)    priority 31 (base 31)    cpu time <0.001s (155.4K cycles, 60.7K instructions, 2.56c/i)
   778  thread_start (libsystem_pthread.dylib + 7051) [0x7fff73818b8b]
     778  _pthread_start (libsystem_pthread.dylib + 24841) [0x7fff7381d109]
       778  base::(anonymous namespace)::ThreadFunc(void*) (Electron Framework + 27011432) [0x10fd9f968]
