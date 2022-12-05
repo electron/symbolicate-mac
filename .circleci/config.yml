@@ -21,17 +21,17 @@ version: 2
 jobs:
   test-mac:
     macos:
-      xcode: "12.4.0"
+      xcode: "13.4.0"
     <<: *steps-test
 
   release:
     macos:
-      xcode: "12.4.0"
+      xcode: "13.4.0"
     steps:
       - checkout
       - *step-restore-cache
       - run: yarn
-      - run: npx semantic-release
+      - run: npx semantic-release@17.4.5
 workflows:
   version: 2
   test_and_release:
