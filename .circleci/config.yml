@@ -16,33 +16,25 @@ steps-test: &steps-test
         key: v2-dependencies-{{ arch }}-{{ checksum "yarn.lock" }}
     - run: yarn test
 
-
-version: 2
+version: 2.1
+orbs:
+  cfa: continuousauth/npm@1.0.2
 jobs:
   test-mac:
     macos:
       xcode: "13.4.0"
     <<: *steps-test
 
-  release:
-    macos:
-      xcode: "13.4.0"
-    steps:
-      - checkout
-      - *step-restore-cache
-      - run: yarn
-      - run: npx semantic-release@17.4.5
 workflows:
-  version: 2
   test_and_release:
     # Run the test jobs first, then the release only when all the test jobs are successful
     jobs:
       - test-mac
-      - release:
+      - cfa/release:
           requires:
             - test-mac
           filters:
             branches:
               only:
                 - main
-
+          context: cfa-release
