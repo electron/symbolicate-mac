@@ -1,4 +1,7 @@
-# electron-symbolicate-mac
+# @electron/symbolicate-mac
+
+[![CircleCI build status](https://circleci.com/gh/electron/symbolicate-mac/tree/main.svg?style=shield)](https://circleci.com/gh/electron/symbolicate-mac/tree/main)
+[![npm version](http://img.shields.io/npm/v/@electron/symbolicate-mac.svg)](https://npmjs.org/package/@electron/symbolicate-mac)
 
 Symbolicate an [Electron](https://www.electronjs.org/) macOS crash report that is
 missing symbols. Wraps [parse-breakpad](https://github.com/nornagon/parse-breakpad) with
@@ -36,7 +39,7 @@ Binary Images:
 [...]
 ```
 
-- Run `electron-symbolicate-mac` and specify the path to the file
+- Run `@electron/symbolicate-mac` and specify the path to the file
 
 ```sh
 npx @electron/symbolicate-mac /path/to/crash.txt
