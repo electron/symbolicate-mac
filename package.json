@@ -7,6 +7,9 @@
   "bin": {
     "electron-symbolicate-mac": "./index.js"
   },
+  "files": [
+    "index.js"
+  ],
   "scripts": {
     "test": "jest"
   },
