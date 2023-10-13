@@ -105,11 +105,12 @@ function parseAsCrashReportLine(line) {
   // 13 com.github.Electron.framework 0x000000010cfa931d node::binding::get_linked_module(char const*) + 3549
   // 1   com.github.Electron.framework 	0x000000010c99e684 -[ElectronNSWindowDelegate windowWillClose:] + 36 (electron_ns_window_delegate.mm:251)
   // 15  com.github.Electron.framework 	0x00000001118b1a86 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*) + 10125238
-  const m = /^(\s*\d+\s+(\S+)\s+0x([0-9a-f]+)\s+)(.+? \+ \d+)/.exec(line)
+  // 0   Electron Framework                         0x1104881e7 node::AsyncResource::get_async_id() const + 9674519
+  const m = /^(\s*\d+\s+(.+)\s+0x([0-9a-f]+)\s+)(.+? \+ \d+)/.exec(line)
   if (m) {
     const [, prefix, libraryId, address, symbolWithOffset] = m
     return {
-      libraryId,
+      libraryId: libraryId.trim(),
       address: parseInt(address, 16),
       replace: { from: prefix.length, length: symbolWithOffset.length }
     }
