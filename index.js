@@ -77,7 +77,8 @@ const binaryImages = (dumpText) => {
   //  0x112073000 - 0x112086ff3 +com.github.Squirrel (1.0 - 1) <68FF73B4-1C5A-3235-B391-3EA358FE89C0> /Applications/Slack.app/Contents/Frameworks/Squirrel.framework/Versions/A/Squirrel
   //  0x11209f000 - 0x1120e6fff +com.electron.reactive (3.1.0 - 0.0.0) <5DED8556-18AB-3090-ADBF-AEB05C656853> /Applications/Slack.app/Contents/Frameworks/ReactiveObjC.framework/Versions/A/ReactiveObjC
   //  0x10ffeb000 -        0x10fffefff  com.tinyspeck.slackmacgap.helper (0)           <822C7053-6F03-3481-A781-ACF996BC3C0F>         /Applications/Slack.app/Contents/Frameworks/Slack Helper (Renderer).app/Contents/MacOS/Slack Helper (Renderer)
-  const re = /^\s*0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+)\s+(\+)?(\S+)\s+\(([^)]+)\)\s+<([0-9A-F-]+)>\s+(.+)$/mg
+  //  0x10c830000 -        0x11583ffff com.github.Electron.framework (*) <4c4c4416-5555-3144-a14d-de8dd5c37e80> /Applications/Slack.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+  const re = /^\s*0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+)\s+(\+)?(\S+)\s+\(([^)]+)\)\s+<([0-9a-f-]+)>\s+(.+)$/mgi
   let m
   const images = []
   while (m = re.exec(dumpText)) {
@@ -104,11 +105,12 @@ function parseAsCrashReportLine(line) {
   // 13 com.github.Electron.framework 0x000000010cfa931d node::binding::get_linked_module(char const*) + 3549
   // 1   com.github.Electron.framework 	0x000000010c99e684 -[ElectronNSWindowDelegate windowWillClose:] + 36 (electron_ns_window_delegate.mm:251)
   // 15  com.github.Electron.framework 	0x00000001118b1a86 v8::internal::SetupIsolateDelegate::SetupHeap(v8::internal::Heap*) + 10125238
-  const m = /^(\s*\d+\s+(\S+)\s+0x([0-9a-f]+)\s+)(.+? \+ \d+)/.exec(line)
+  // 0   Electron Framework                         0x1104881e7 node::AsyncResource::get_async_id() const + 9674519
+  const m = /^(\s*\d+\s+(.+)\s+0x([0-9a-f]+)\s+)(.+? \+ \d+)/.exec(line)
   if (m) {
     const [, prefix, libraryId, address, symbolWithOffset] = m
     return {
-      libraryId,
+      libraryId: libraryId.trim(),
       address: parseInt(address, 16),
       replace: { from: prefix.length, length: symbolWithOffset.length }
     }
