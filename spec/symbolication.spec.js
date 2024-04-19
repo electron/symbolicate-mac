@@ -14,4 +14,8 @@ describe('symbolication', function () {
   it('symbolicates a sampling report', async () => {
     expect(await symbolicate({ file: __dirname + '/fixtures/sampling.txt' })).toMatchSnapshot()
   }, TIMEOUT)
+
+  it('symbolicates a windows crash', async () => {
+    expect(await symbolicate({ file: __dirname + '/fixtures/win-crash.txt' })).toMatchSnapshot()
+  }, TIMEOUT)
 })

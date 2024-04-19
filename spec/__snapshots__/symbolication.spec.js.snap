@@ -2039,3 +2039,18 @@ Note:             1 idle work queue thread omitted
    *0xffffff8000200000 - 0xffffff8000bfffff  kernel (6153.141.28.1)                                <BB1171FD-A9E3-3D24-92F7-F4DD45974EFD>  /System/Library/Kernels/kernel
 "
 `;
+
+exports[`symbolication symbolicates a windows crash 1`] = `
+"0 electron.exe.pdb 0x00007ff68e2d395b v8::base::OS::Abort()
+1 electron.exe.pdb 0x00007ff691a5711f _tailMerge_winusb.dll
+2 electron.exe.pdb 0x00007ff691a570c7 _tailMerge_winusb.dll
+3 electron.exe.pdb 0x00007ff6908090f3 _tailMerge_winusb.dll
+4 electron.exe.pdb 0x00007ff68e2d57d1 V8_Fatal(char const *,...)
+5 electron.exe.pdb 0x00007ff691a5711f _tailMerge_winusb.dll
+
+0x00007ff687850000 - 0x00007ff692487000 electron.exe.pdb (7.5.0.0) <2F7747B60BAA52C84C4C44205044422E> electron.exe.pdb
+0x00007ffab94b0000 - 0x00007ffab96a8000 ntdll.dll (10.0.19041.4239) <1669C503FDE3540E0A2FBE91C8120436> ntdll.dll
+0x00007ffab86e0000 - 0x00007ffab879d000 KERNEL32.DLL (10.0.19041.3636) <B07C97792B439ABC0DF83499536C7AE5> KERNEL32.DLL
+0x00007ffab6e40000 - 0x00007ffab7136000 KERNELBASE.dll (10.0.19041.4291) <DFC28314D88FE97BC24F88F5A77E9F73> KERNELBASE.dll
+"
+`;
