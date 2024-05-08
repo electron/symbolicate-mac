@@ -200,5 +200,5 @@ if (require.main === module) {
     })
     .help()
     .argv
-  symbolicate(argv).then(console.log)
+  symbolicate(argv).then(console.log, console.error)
 }
