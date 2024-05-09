@@ -17,6 +17,9 @@ const symbolicate = async (options) => {
   const symbolCache = new Map
   const dumpText = await fs.promises.readFile(file, 'utf8')
   const images = binaryImages(dumpText)
+  const electronImage = images.find(v => /electron/i.test(v.library))
+  if (electronImage) console.error(`Found Electron ${electronImage.version}`)
+  else console.error('No Electron image found')
 
   let result = []
 
