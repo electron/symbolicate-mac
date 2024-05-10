@@ -87,7 +87,7 @@ const binaryImages = (dumpText) => {
   const images = []
   while (m = re.exec(dumpText)) {
     const [, startAddress, endAddress, plus, library, version, debugId, path] = m
-    images.push({
+    const image = {
       startAddress: parseInt(startAddress, 16),
       endAddress: parseInt(endAddress, 16),
       plus,
@@ -95,7 +95,16 @@ const binaryImages = (dumpText) => {
       version,
       debugId,
       path
-    })
+    }
+    const existing = images.find(v => v.library === image.library)
+    if (existing) {
+      if (existing.debugId !== debugId || existing.startAddress !== image.startAddress) {
+        console.warn(`Duplicate library entries for ${library}, only using the first.`)
+        console.warn(existing, image)
+      }
+      continue;
+    }
+    images.push(image)
   }
   return images
 }
