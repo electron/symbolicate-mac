@@ -5,7 +5,7 @@ const fs = require('fs')
 const stream = require('stream')
 const { promisify } = require('util')
 
-const breakpad = require('parse-breakpad')
+const { symbolicateFrames } = require('@indutny/breakpad');
 const got = require('got')
 const mkdirp = require('mkdirp')
 const yargs = require('yargs')
@@ -14,62 +14,80 @@ const symbolicate = async (options) => {
   const {force, file} = options
   const cacheDirectory = path.join(__dirname, 'cache', 'breakpad_symbols')
 
-  const symbolCache = new Map
   const dumpText = await fs.promises.readFile(file, 'utf8')
   const images = binaryImages(dumpText)
   const electronImage = images.find(v => /electron/i.test(v.library))
   if (electronImage) console.error(`Found Electron ${electronImage.version}`)
   else console.error('No Electron image found')
 
-  let result = []
+  const lines = dumpText.split(/\r?\n/);
 
-  for (const line of dumpText.split(/\r?\n/)) {
+  const linesByImage = new Map();
+  for (const [lineIndex, line] of lines.entries()) {
     const parsedLine = parseAddressLine(line)
-    if (parsedLine) {
-      const library = parsedLine.libraryBaseName || parsedLine.libraryId
-      const image = images.find(i => i.library === library || path.basename(i.path) === library)
-      if (image) {
-        const offset = parsedLine.address - image.startAddress
-        const res = await symbolicateOne({
-          image,
-          offset
-        })
-        if (res) {
-          result.push(line.substr(0, parsedLine.replace.from) + res.func.name + line.substr(parsedLine.replace.from + parsedLine.replace.length))
-          continue
-        }
-      }
+    if (!parsedLine) {
+      continue;
     }
-    result.push(line)
+
+    const library = parsedLine.libraryBaseName || parsedLine.libraryId
+    const image = images.find(i => i.library === library || i.basename === library)
+    if (!image) {
+      continue;
+    }
+
+    const offset = parsedLine.address - image.startAddress
+    const imageKey = `${image.debugId}/${image.basename}`;
+
+    let entry = linesByImage.get(imageKey);
+    if (!entry) {
+      entry = { image, group: [] };
+      linesByImage.set(imageKey, entry);
+    }
+    entry.group.push({
+      image,
+      offset,
+      lineIndex,
+      parsedLine,
+    });
   }
 
-  return result.join('\n')
+  for (const { image, group } of linesByImage.values()) {
+    const { debugId, basename: moduleBasename, extname: moduleExtname } = image
+    const suffix = moduleExtname === '.pdb' ? '1' : '0';
+    const stream = await getSymbolFile(debugId.replace(/-/g, '') + suffix, moduleBasename)
+    if (!stream) {
+      continue;
+    }
+
+    const frames = group.map(({ offset }) => offset);
+    const symbolicated = await symbolicateFrames(stream, frames);
+
+    for (const [index, symbol] of symbolicated.entries()) {
+      if (!symbol) {
+        continue;
+      }
+
+      const { lineIndex, parsedLine } = group[index];
+      const line = lines[lineIndex];
+      lines[lineIndex] = line.substr(0, parsedLine.replace.from) + symbol.name + line.substr(parsedLine.replace.from + parsedLine.replace.length);
+    }
+  }
+
+  return lines.join('\n')
 
   async function getSymbolFile(moduleId, moduleName) {
     const pdb = moduleName.replace(/^\//, '')
     const symbolFileName = pdb.replace(/(\.pdb)?$/, '.sym')
     const symbolPath = path.join(cacheDirectory, pdb, moduleId, symbolFileName)
     if (fs.existsSync(symbolPath) && !force) {
-      return breakpad.parse(fs.createReadStream(symbolPath))
+      return fs.createReadStream(symbolPath)
     }
     if (!fs.existsSync(symbolPath) && (!fs.existsSync(path.dirname(symbolPath)) || force)) {
       for (const baseUrl of SYMBOL_BASE_URLS) {
         if (await fetchSymbol(cacheDirectory, baseUrl, pdb, moduleId, symbolFileName))
-          return breakpad.parse(fs.createReadStream(symbolPath))
+          return fs.createReadStream(symbolPath)
       }
     }
-  }
-
-  async function symbolicateOne({image, offset}) {
-    const { debugId, path: modulePath } = image
-    if (!symbolCache.has(debugId)) {
-      const suffix = path.extname(modulePath) === '.pdb' ? '1' : '0';
-      const parsed = await getSymbolFile(debugId.replace(/-/g, '') + suffix, path.basename(modulePath))
-      symbolCache.set(debugId, parsed)
-    }
-    const parsed = symbolCache.get(debugId)
-    if (parsed)
-      return parsed.lookup(offset)
   }
 }
 
@@ -86,7 +104,7 @@ const binaryImages = (dumpText) => {
   let m
   const images = []
   while (m = re.exec(dumpText)) {
-    const [, startAddress, endAddress, plus, library, version, debugId, path] = m
+    const [, startAddress, endAddress, plus, library, version, debugId, modulePath] = m
     const image = {
       startAddress: parseInt(startAddress, 16),
       endAddress: parseInt(endAddress, 16),
@@ -94,7 +112,8 @@ const binaryImages = (dumpText) => {
       library,
       version,
       debugId,
-      path
+      basename: path.basename(modulePath),
+      extname: path.extname(modulePath),
     }
     const existing = images.find(v => v.library === image.library)
     if (existing) {
