@@ -24,9 +24,9 @@
   ],
   "license": "ISC",
   "dependencies": {
+    "@indutny/breakpad": "^1.2.0",
     "got": "^11.8.2",
     "mkdirp": "^1.0.4",
-    "parse-breakpad": "^0.1.0",
     "yargs": "^17.0.1"
   },
   "engines": {
