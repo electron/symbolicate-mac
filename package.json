@@ -4,6 +4,9 @@
   "description": "Symbolicate textual Electron macOS crashes",
   "main": "index.js",
   "repository": "https://github.com/electron/symbolicate-mac",
+  "publishConfig": {
+    "provenance": true
+  },
   "bin": {
     "electron-symbolicate-mac": "./index.js"
   },
