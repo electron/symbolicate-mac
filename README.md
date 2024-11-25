@@ -1,6 +1,6 @@
 # @electron/symbolicate-mac
 
-[![CircleCI build status](https://circleci.com/gh/electron/symbolicate-mac/tree/main.svg?style=shield)](https://circleci.com/gh/electron/symbolicate-mac/tree/main)
+[![Test](https://github.com/electron/symbolicate-mac/actions/workflows/test.yml/badge.svg)](https://github.com/electron/symbolicate-mac/actions/workflows/test.yml)
 [![npm version](http://img.shields.io/npm/v/@electron/symbolicate-mac.svg)](https://npmjs.org/package/@electron/symbolicate-mac)
 
 Symbolicate an [Electron](https://www.electronjs.org/) macOS crash report that is
