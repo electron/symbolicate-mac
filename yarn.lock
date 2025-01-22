@@ -408,6 +408,18 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@indutny/breakpad-parser-wasm@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@indutny/breakpad-parser-wasm/-/breakpad-parser-wasm-1.0.0.tgz#bc91c12a6d6a11a4c5366e8a46a3e317f3a7b54f"
+  integrity sha512-v+/bvaPaz60GJB0vd2trXLu254KWdSB7LIcI2VljZ2eq8Ij478PK+5T7HUPt8uf7TK/5lFfhQZsBdpisGdYwaQ==
+
+"@indutny/breakpad@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@indutny/breakpad/-/breakpad-1.2.0.tgz#17d19f1210536bd2ed72da91e60a17ba5efc8be8"
+  integrity sha512-JjG4Y82p710old/xO9jCcFCjoDwR03IWauCuwWD2P5sXQDRzxz3S4CKZAYRDhU7avxf502RMvCQSvI9WLMDQsg==
+  dependencies:
+    "@indutny/breakpad-parser-wasm" "^1.0.0"
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -2075,11 +2087,6 @@ p-try@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
-
-parse-breakpad@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/parse-breakpad/-/parse-breakpad-0.1.0.tgz#6d3c80c856d35550b6adea374b93ec41d758ee8b"
-  integrity sha512-xF9F9+LnMzPhXZSExrvyhzormvlR0Co9LJ9Un8SPDMiMNm3PqIwfYiB4UcqG50yc9g42H2Fndpx/5gfNqdgowQ==
 
 parse-json@^5.2.0:
   version "5.2.0"
