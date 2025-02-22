@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`symbolication symbolicates a crash report 1`] = `
+exports[`symbolication > symbolicates a crash report 1`] = `
 "Process: Slack [2214]
 Path: /Applications/Slack.app/Contents/MacOS/Slack
 Identifier: com.tinyspeck.slackmacgap
@@ -560,7 +560,7 @@ Binary Images:
 "
 `;
 
-exports[`symbolication symbolicates a sampling report 1`] = `
+exports[`symbolication > symbolicates a sampling report 1`] = `
 "Sampling process 2252 for 3 seconds with 1 millisecond of run time between samples
 Sampling completed, processing symbols...
 Analysis of sampling Slack (pid 2252) every 1 millisecond
@@ -1537,7 +1537,7 @@ Sample analysis of process 2252 written to file /dev/stdout
 "
 `;
 
-exports[`symbolication symbolicates a spindump 1`] = `
+exports[`symbolication > symbolicates a spindump 1`] = `
 "Date/Time:        2021-07-22 14:06:09 -0700
 End time:         2021-07-22 14:06:31 -0700
 OS Version:       Mac OS X 10.15.7 (Build 19H1030)
@@ -2040,7 +2040,7 @@ Note:             1 idle work queue thread omitted
 "
 `;
 
-exports[`symbolication symbolicates a windows crash 1`] = `
+exports[`symbolication > symbolicates a windows crash 1`] = `
 "0 electron.exe.pdb 0x00007ff68e2d395b v8::base::OS::Abort()
 1 electron.exe.pdb 0x00007ff691a5711f _tailMerge_winusb.dll
 2 electron.exe.pdb 0x00007ff691a570c7 _tailMerge_winusb.dll
