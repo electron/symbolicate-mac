@@ -1,4 +1,6 @@
-const {parseAddress} = require('..').testing
+import { describe, expect, it } from 'vitest'
+
+import { parseAddressLine as parseAddress } from '../parsing.js'
 
 describe('address parsing', () => {
   it('parses an address from a crash dump', () => {
