@@ -163,7 +163,7 @@ async function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
   return true
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if ((await fs.promises.realpath(process.argv[1])) === fileURLToPath(import.meta.url)) {
   const {
     positionals,
     values: { force, help, version },
