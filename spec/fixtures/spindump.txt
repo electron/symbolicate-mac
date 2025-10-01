@@ -121,7 +121,7 @@ Note:             1 idle work queue thread omitted
                                                                                                                         1    v8::internal::baseline::BytecodeOffsetIterator::UpdatePointers() + 8975 (Electron Framework + 8427215) [0x10ebe66cf]
                                                                                                                           1    node::OnFatalError(char const*, char const*) + 396590 (Electron Framework + 55449694) [0x1118be85e]
                                                                                                                             1    uv_os_gethostname + 96 (Electron Framework + 47904) [0x10e3e8b20]
-                                                                                                                              1    gethostname + 179 (libsystem_c.dylib + 160104) [0x7fff7368f168]
+                                                                                                                              1    gethostname (libsystem_c.dylib + 160104) [0x7fff7368f168]
                                                                                                                                 1    __sysctl + 10 (libsystem_kernel.dylib + 8514) [0x7fff7375b142]
                                                                                                                                  *1    hndl_unix_scall64 + 22 (kernel + 778758) [0xffffff80002be206]
                                                                                                                                    *1    unix_syscall64 + 647 (kernel + 7870887) [0xffffff80009819a7]
