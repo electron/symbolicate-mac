@@ -1,43 +1,47 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs'
-import path from 'node:path'
-import { Readable } from 'node:stream'
-import { pipeline } from 'node:stream/promises'
+import fs from 'node:fs';
+import path from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createGunzip } from 'node:zlib';
 
-import { symbolicateFrames } from '@indutny/breakpad'
+import { symbolicateFrames } from '@indutny/breakpad';
 
-import { parseAddressLine } from './parsing.js'
+import { parseAddressLine } from './parsing.js';
 
 export const symbolicate = async (options) => {
-  const {force, file} = options
-  const cacheDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'cache', 'breakpad_symbols')
+  const { force, file } = options;
+  const cacheDirectory = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    'cache',
+    'breakpad_symbols',
+  );
 
-  const dumpText = await fs.promises.readFile(file, 'utf8')
-  const images = binaryImages(dumpText)
-  const electronImage = images.find(v => /electron/i.test(v.library))
-  if (electronImage) console.error(`Found Electron ${electronImage.version}`)
-  else console.error('No Electron image found')
+  const dumpText = await fs.promises.readFile(file, 'utf8');
+  const images = binaryImages(dumpText);
+  const electronImage = images.find((v) => /electron/i.test(v.library));
+  if (electronImage) console.error(`Found Electron ${electronImage.version}`);
+  else console.error('No Electron image found');
 
   const lines = dumpText.split(/\r?\n/);
 
   const linesByImage = new Map();
   for (const [lineIndex, line] of lines.entries()) {
-    const parsedLine = parseAddressLine(line)
+    const parsedLine = parseAddressLine(line);
     if (!parsedLine) {
       continue;
     }
 
-    const library = parsedLine.libraryBaseName || parsedLine.libraryId
-    const image = images.find(i => i.library === library || i.basename === library)
+    const library = parsedLine.libraryBaseName || parsedLine.libraryId;
+    const image = images.find((i) => i.library === library || i.basename === library);
     if (!image) {
       continue;
     }
 
-    const offset = parsedLine.address - image.startAddress
+    const offset = parsedLine.address - image.startAddress;
     const imageKey = `${image.debugId}/${image.basename}`;
 
     let entry = linesByImage.get(imageKey);
@@ -54,9 +58,9 @@ export const symbolicate = async (options) => {
   }
 
   for (const { image, group } of linesByImage.values()) {
-    const { debugId, basename: moduleBasename, extname: moduleExtname } = image
+    const { debugId, basename: moduleBasename, extname: moduleExtname } = image;
     const suffix = moduleExtname === '.pdb' ? '1' : '0';
-    const stream = await getSymbolFile(debugId.replace(/-/g, '') + suffix, moduleBasename)
+    const stream = await getSymbolFile(debugId.replace(/-/g, '') + suffix, moduleBasename);
     if (!stream) {
       continue;
     }
@@ -71,27 +75,30 @@ export const symbolicate = async (options) => {
 
       const { lineIndex, parsedLine } = group[index];
       const line = lines[lineIndex];
-      lines[lineIndex] = line.substr(0, parsedLine.replace.from) + symbol.name + line.substr(parsedLine.replace.from + parsedLine.replace.length);
+      lines[lineIndex] =
+        line.substr(0, parsedLine.replace.from) +
+        symbol.name +
+        line.substr(parsedLine.replace.from + parsedLine.replace.length);
     }
   }
 
-  return lines.join('\n')
+  return lines.join('\n');
 
   async function getSymbolFile(moduleId, moduleName) {
-    const pdb = moduleName.replace(/^\//, '')
-    const symbolFileName = pdb.replace(/(\.pdb)?$/, '.sym')
-    const symbolPath = path.join(cacheDirectory, pdb, moduleId, symbolFileName)
+    const pdb = moduleName.replace(/^\//, '');
+    const symbolFileName = pdb.replace(/(\.pdb)?$/, '.sym');
+    const symbolPath = path.join(cacheDirectory, pdb, moduleId, symbolFileName);
     if (fs.existsSync(symbolPath) && !force) {
-      return fs.createReadStream(symbolPath)
+      return fs.createReadStream(symbolPath);
     }
     if (!fs.existsSync(symbolPath) && (!fs.existsSync(path.dirname(symbolPath)) || force)) {
       for (const baseUrl of SYMBOL_BASE_URLS) {
         if (await fetchSymbol(cacheDirectory, baseUrl, pdb, moduleId, symbolFileName))
-          return fs.createReadStream(symbolPath)
+          return fs.createReadStream(symbolPath);
       }
     }
   }
-}
+};
 
 const binaryImages = (dumpText) => {
   // e.g.
@@ -102,11 +109,12 @@ const binaryImages = (dumpText) => {
   //  0x11209f000 - 0x1120e6fff +com.electron.reactive (3.1.0 - 0.0.0) <5DED8556-18AB-3090-ADBF-AEB05C656853> /Applications/Slack.app/Contents/Frameworks/ReactiveObjC.framework/Versions/A/ReactiveObjC
   //  0x10ffeb000 -        0x10fffefff  com.tinyspeck.slackmacgap.helper (0)           <822C7053-6F03-3481-A781-ACF996BC3C0F>         /Applications/Slack.app/Contents/Frameworks/Slack Helper (Renderer).app/Contents/MacOS/Slack Helper (Renderer)
   //  0x10c830000 -        0x11583ffff com.github.Electron.framework (*) <4c4c4416-5555-3144-a14d-de8dd5c37e80> /Applications/Slack.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
-  const re = /^\s*0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+)\s+(\+)?(\S+)\s+\(([^)]+)\)\s+<([0-9a-f-]+)>\s+(.+)$/mgi
-  let m
-  const images = []
-  while (m = re.exec(dumpText)) {
-    const [, startAddress, endAddress, plus, library, version, debugId, modulePath] = m
+  const re =
+    /^\s*0x([0-9a-f]+)\s+-\s+0x([0-9a-f]+)\s+(\+)?(\S+)\s+\(([^)]+)\)\s+<([0-9a-f-]+)>\s+(.+)$/gim;
+  let m;
+  const images = [];
+  while ((m = re.exec(dumpText))) {
+    const [, startAddress, endAddress, plus, library, version, debugId, modulePath] = m;
     const image = {
       startAddress: parseInt(startAddress, 16),
       endAddress: parseInt(endAddress, 16),
@@ -116,51 +124,48 @@ const binaryImages = (dumpText) => {
       debugId,
       basename: path.basename(modulePath),
       extname: path.extname(modulePath),
-    }
-    const existing = images.find(v => v.library === image.library)
+    };
+    const existing = images.find((v) => v.library === image.library);
     if (existing) {
       if (existing.debugId !== debugId || existing.startAddress !== image.startAddress) {
-        console.warn(`Duplicate library entries for ${library}, only using the first.`)
-        console.warn(existing, image)
+        console.warn(`Duplicate library entries for ${library}, only using the first.`);
+        console.warn(existing, image);
       }
       continue;
     }
-    images.push(image)
+    images.push(image);
   }
-  return images
-}
+  return images;
+};
 
-const SYMBOL_BASE_URLS = [
-  'https://symbols.mozilla.org/try',
-  'https://symbols.electronjs.org',
-]
+const SYMBOL_BASE_URLS = ['https://symbols.mozilla.org/try', 'https://symbols.electronjs.org'];
 
 async function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
-  const url = `${baseUrl}/${encodeURIComponent(pdb)}/${id}/${encodeURIComponent(symbolFileName)}`
-  const symbolPath = path.join(directory, pdb, id, symbolFileName)
+  const url = `${baseUrl}/${encodeURIComponent(pdb)}/${id}/${encodeURIComponent(symbolFileName)}`;
+  const symbolPath = path.join(directory, pdb, id, symbolFileName);
 
   // ensure path is created
-  await fs.promises.mkdir(path.dirname(symbolPath), { recursive: true })
+  await fs.promises.mkdir(path.dirname(symbolPath), { recursive: true });
 
-  const response = await fetch(url, { headers: { 'Accept-Encoding': 'gzip' } })
+  const response = await fetch(url, { headers: { 'Accept-Encoding': 'gzip' } });
 
   if (response.ok) {
-    const readable = Readable.fromWeb(response.body)
-    const output = fs.createWriteStream(symbolPath)
+    const readable = Readable.fromWeb(response.body);
+    const output = fs.createWriteStream(symbolPath);
     // create symbol
     if (response.headers['content-encoding'] === 'gzip') {
       // decompress the gzip
-      await pipeline(readable, createGunzip(), output)
+      await pipeline(readable, createGunzip(), output);
     } else {
-      await pipeline(readable, output)
+      await pipeline(readable, output);
     }
   } else if (response.status === 404) {
-    return false
+    return false;
   } else {
-    throw new Error(`Response code ${response.status} (${response.statusText})`)
+    throw new Error(`Response code ${response.status} (${response.statusText})`);
   }
 
-  return true
+  return true;
 }
 
 if ((await fs.promises.realpath(process.argv[1])) === fileURLToPath(import.meta.url)) {
@@ -193,14 +198,14 @@ Positionals:
 Options:
   --force    Redownload symbols if present in cache
   --help     Show help
-  --version  Show version number`)
-    process.exit(0)
+  --version  Show version number`);
+    process.exit(0);
   }
 
   if (version) {
-    console.log(JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version)
-    process.exit(0)
+    console.log(JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url))).version);
+    process.exit(0);
   }
 
-  symbolicate({ file: positionals[0], force }).then(console.log, console.error)
+  symbolicate({ file: positionals[0], force }).then(console.log, console.error);
 }
