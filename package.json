@@ -42,7 +42,8 @@
     "lint-staged": "^17.4.1",
     "oxfmt": "^0.44.0",
     "oxlint": "^1.59.0",
-    "vitest": "^4.1.2"
+    "vite": "^8.0.16",
+    "vitest": "^5.0.1"
   },
   "resolutions": {
     "fsevents": "npm:@electron/fsevents@2.3.3-fork"
