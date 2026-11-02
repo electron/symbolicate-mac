@@ -141,7 +141,18 @@ const binaryImages = (dumpText) => {
 const SYMBOL_BASE_URLS = ['https://symbols.mozilla.org/try', 'https://symbols.electronjs.org'];
 
 async function fetchSymbol(directory, baseUrl, pdb, id, symbolFileName) {
-  const url = `${baseUrl}/${encodeURIComponent(pdb)}/${id}/${encodeURIComponent(symbolFileName)}`;
+  const safeComponent = /^[\w.-]+$/;
+  if (!safeComponent.test(pdb) || !safeComponent.test(id) || !safeComponent.test(symbolFileName)) {
+    throw new Error('Invalid symbol component');
+  }
+
+  const url = new URL(
+    `${encodeURIComponent(pdb)}/${encodeURIComponent(id)}/${encodeURIComponent(symbolFileName)}`,
+    `${baseUrl}/`,
+  );
+  if (!url.href.startsWith(`${baseUrl}/`)) {
+    throw new Error('Resolved symbol URL escapes the allowed base URL');
+  }
   const symbolPath = path.join(directory, pdb, id, symbolFileName);
 
   // ensure path is created
