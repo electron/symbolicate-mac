@@ -9,7 +9,7 @@
     "provenance": true
   },
   "bin": {
-    "electron-symbolicate-mac": "./index.js"
+    "electron-symbolicate-mac": "index.js"
   },
   "files": [
     "index.js",
