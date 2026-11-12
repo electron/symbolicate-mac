@@ -17,7 +17,7 @@ __metadata:
     vite: "npm:^8.0.16"
     vitest: "npm:^5.0.5"
   bin:
-    electron-symbolicate-mac: ./index.js
+    electron-symbolicate-mac: index.js
   languageName: unknown
   linkType: soft
 
